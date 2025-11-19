@@ -20,6 +20,7 @@ from classes.pago import Pago, from_dict as pago_from_dict
 from classes.reserva import Reserva, from_dict as reserva_from_dict
 from classes.reserva_detalle import ReservaDetalle, from_dict as reserva_detalle_from_dict
 from classes.torneo import Torneo, from_dict as torneo_from_dict
+from classes.equipo import Equipo, from_dict as equipo_from_dict
 from classes.cancha import Cancha, from_dict as cancha_from_dict
 from classes.estado import Estado, from_dict as estado_from_dict
 from classes.tipo_cancha import TipoCancha, from_dict as tipo_cancha_from_dict
@@ -43,6 +44,7 @@ def test_models_roundtrip():
     reserva = Reserva(2, 1, 3, Decimal("200.00"), datetime.date(2025, 2, 3), "PEND")
     reserva_detalle = ReservaDetalle(1, 2, 3, 4, Decimal("100.00"), Decimal("80.00"), Decimal("180.00"))
     torneo = Torneo(1, "Copa", datetime.date(2025, 3, 1), datetime.date(2025, 3, 10))
+    equipo = Equipo(1, 1, "Equipo A", 11)
     cancha = Cancha(1, 1, 1, "Cancha 1")
     estado = Estado(1, "Disponible")
     tipo_cancha = TipoCancha(1, "Futbol", Decimal("500.00"))
@@ -58,6 +60,7 @@ def test_models_roundtrip():
     roundtrip(reserva_from_dict, reserva)
     roundtrip(reserva_detalle_from_dict, reserva_detalle)
     roundtrip(torneo_from_dict, torneo)
+    roundtrip(equipo_from_dict, equipo)
     roundtrip(cancha_from_dict, cancha)
     roundtrip(estado_from_dict, estado)
     roundtrip(tipo_cancha_from_dict, tipo_cancha)
