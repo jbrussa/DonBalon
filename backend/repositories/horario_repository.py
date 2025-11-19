@@ -1,0 +1,86 @@
+"""
+HorarioRepository - DAO para la tabla Horario
+"""
+
+from typing import List, Optional
+from classes.horario import Horario, from_dict as horario_from_dict
+from .base_repository import BaseRepository
+
+
+class HorarioRepository(BaseRepository):
+    """Repositorio para manejar operaciones CRUD de la entidad Horario"""
+
+    TABLE = "Horario"
+
+    def create(self, horario: Horario) -> Horario:
+        """
+        Inserta un nuevo Horario en la base de datos
+
+        Args:
+            horario: Objeto Horario a insertar
+
+        Returns:
+            El objeto Horario con el id asignado
+        """
+        sql = f"INSERT INTO {self.TABLE} (hora_inicio, hora_fin) VALUES (?, ?)"
+        cur = self.execute(sql, (horario.hora_inicio, horario.hora_fin))
+        horario.id_horario = cur.lastrowid
+        return horario
+
+    def get_by_id(self, id_horario: int) -> Optional[Horario]:
+        """
+        Obtiene un Horario por su id
+
+        Args:
+            id_horario: Id del Horario a obtener
+
+        Returns:
+            Objeto Horario o None si no existe
+        """
+        row = self.query_one(f"SELECT * FROM {self.TABLE} WHERE id_horario = ?", (id_horario,))
+        if not row:
+            return None
+        return horario_from_dict(dict(row))
+
+    def get_all(self) -> List[Horario]:
+        """
+        Obtiene todos los Horarios
+
+        Returns:
+            Lista de objetos Horario
+        """
+        rows = self.query_all(f"SELECT * FROM {self.TABLE}")
+        return [horario_from_dict(dict(row)) for row in rows]
+
+    def update(self, horario: Horario) -> None:
+        """
+        Actualiza un Horario existente
+
+        Args:
+            horario: Objeto Horario con los datos a actualizar
+        """
+        sql = f"UPDATE {self.TABLE} SET hora_inicio = ?, hora_fin = ? WHERE id_horario = ?"
+        self.execute(sql, (horario.hora_inicio, horario.hora_fin, horario.id_horario))
+
+    def delete(self, id_horario: int) -> None:
+        """
+        Elimina un Horario
+
+        Args:
+            id_horario: Id del Horario a eliminar
+        """
+        sql = f"DELETE FROM {self.TABLE} WHERE id_horario = ?"
+        self.execute(sql, (id_horario,))
+
+    def exists(self, id_horario: int) -> bool:
+        """
+        Verifica si un Horario existe
+
+        Args:
+            id_horario: Id del Horario a verificar
+
+        Returns:
+            True si existe, False en caso contrario
+        """
+        row = self.query_one(f"SELECT 1 FROM {self.TABLE} WHERE id_horario = ?", (id_horario,))
+        return row is not None
