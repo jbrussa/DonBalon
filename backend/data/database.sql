@@ -18,10 +18,8 @@ CREATE TABLE IF NOT EXISTS TipoCancha (
 -- Tabla: Cancha
 CREATE TABLE IF NOT EXISTS Cancha (
     id_cancha INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_estado INTEGER NOT NULL,
     id_tipo INTEGER NOT NULL,
     nombre VARCHAR(100) NOT NULL,
-    FOREIGN KEY (id_estado) REFERENCES Estado(id_estado),
     FOREIGN KEY (id_tipo) REFERENCES TipoCancha(id_tipo)
 );
 
@@ -54,8 +52,10 @@ CREATE TABLE IF NOT EXISTS Turno (
     id_cancha INTEGER NOT NULL,
     id_horario INTEGER NOT NULL,
     fecha DATE NOT NULL,
+    id_estado INTEGER NOT NULL,
     FOREIGN KEY (id_cancha) REFERENCES Cancha(id_cancha),
-    FOREIGN KEY (id_horario) REFERENCES Horario(id_horario)
+    FOREIGN KEY (id_horario) REFERENCES Horario(id_horario),
+    FOREIGN KEY (id_estado) REFERENCES Estado(id_estado)
 );
 
 -- Tabla: Cliente
@@ -124,10 +124,11 @@ CREATE TABLE IF NOT EXISTS Equipo (
 );
 
 -- Índices para mejorar las búsquedas
-CREATE INDEX IF NOT EXISTS idx_cancha_estado ON Cancha(id_estado);
+-- Índices para mejorar las búsquedas
 CREATE INDEX IF NOT EXISTS idx_cancha_tipo ON Cancha(id_tipo);
 CREATE INDEX IF NOT EXISTS idx_turno_cancha ON Turno(id_cancha);
 CREATE INDEX IF NOT EXISTS idx_turno_horario ON Turno(id_horario);
+CREATE INDEX IF NOT EXISTS idx_turno_estado ON Turno(id_estado);
 CREATE INDEX IF NOT EXISTS idx_pago_reserva ON Pago(id_reserva);
 CREATE INDEX IF NOT EXISTS idx_pago_metodo ON Pago(id_metodo_pago);
 CREATE INDEX IF NOT EXISTS idx_reserva_cliente ON Reserva(id_cliente);

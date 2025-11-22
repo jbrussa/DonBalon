@@ -16,6 +16,9 @@ from schemas.reserva_transaccion_schema import ReservaTransaccionSchema
 from data.database_connection import DatabaseConnection
 
 
+ID_ESTADO_NO_DISPONIBLE = 2
+
+
 class ReservaService:
     def __init__(self, db_path: Optional[str] = None, connection: Optional[sqlite3.Connection] = None):
         self.db_conn = DatabaseConnection()
@@ -124,7 +127,8 @@ class ReservaService:
                 nuevo_turno = Turno(
                     id_cancha=item.id_cancha,
                     id_horario=item.id_horario,
-                    fecha=item.fecha
+                    fecha=item.fecha,
+                    id_estado=ID_ESTADO_NO_DISPONIBLE
                 )
                 turno_creado = self.turno_repository.create(nuevo_turno)
 

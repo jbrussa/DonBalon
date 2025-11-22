@@ -7,6 +7,7 @@ class TurnoBase(BaseModel):
     id_cancha: int = Field(..., description="ID de la cancha")
     id_horario: int = Field(..., description="ID del horario")
     fecha: date = Field(..., description="Fecha del turno")
+    id_estado: int = Field(..., description="ID del estado del turno")
 
 
 class TurnoCreate(TurnoBase):
@@ -17,6 +18,7 @@ class TurnoUpdate(BaseModel):
     id_cancha: Optional[int] = None
     id_horario: Optional[int] = None
     fecha: Optional[date] = None
+    id_estado: Optional[int] = None
 
 
 class TurnoResponse(TurnoBase):

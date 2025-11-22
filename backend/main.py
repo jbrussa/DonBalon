@@ -57,9 +57,7 @@ def read_root():
     """Endpoint raíz de la API"""
     return {
         "message": "Bienvenido a DonBalon API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "redoc": "/redoc"
+        "version": "1.0.0"
     }
 
 

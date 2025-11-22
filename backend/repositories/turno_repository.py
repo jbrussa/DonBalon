@@ -23,8 +23,8 @@ class TurnoRepository(BaseRepository):
         Returns:
             El objeto Turno con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (id_cancha, id_horario, fecha) VALUES (?, ?, ?)"
-        cur = self.execute(sql, (turno.id_cancha, turno.id_horario, turno.fecha))
+        sql = f"INSERT INTO {self.TABLE} (id_cancha, id_horario, fecha, id_estado) VALUES (?, ?, ?, ?)"
+        cur = self.execute(sql, (turno.id_cancha, turno.id_horario, turno.fecha, turno.id_estado))
         turno.id_turno = cur.lastrowid
         return turno
 
@@ -103,8 +103,8 @@ class TurnoRepository(BaseRepository):
         Args:
             turno: Objeto Turno con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET id_cancha = ?, id_horario = ?, fecha = ? WHERE id_turno = ?"
-        self.execute(sql, (turno.id_cancha, turno.id_horario, turno.fecha, turno.id_turno))
+        sql = f"UPDATE {self.TABLE} SET id_cancha = ?, id_horario = ?, fecha = ?, id_estado = ? WHERE id_turno = ?"
+        self.execute(sql, (turno.id_cancha, turno.id_horario, turno.fecha, turno.id_estado, turno.id_turno))
 
     def delete(self, id_turno: int) -> None:
         """

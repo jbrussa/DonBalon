@@ -10,9 +10,8 @@ def insert_sample_data(db_path):
     
     try:
         # Estado
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('Disponible', 'cancha')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('No disponible', 'cancha')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('Mantenimiento', 'cancha')")
+        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('Disponible', 'turno')")
+        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('No disponible', 'turno')")
         cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('PENDIENTE', 'reserva')")
         cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('CONFIRMADA', 'reserva')")
         cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('PENDIENTE', 'pago')")
@@ -24,9 +23,9 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Tenis', 300.00)")
         
         # Cancha
-        cursor.execute("INSERT INTO Cancha (id_estado, id_tipo, nombre) VALUES (1, 1, 'Cancha 1')")
-        cursor.execute("INSERT INTO Cancha (id_estado, id_tipo, nombre) VALUES (1, 1, 'Cancha 2')")
-        cursor.execute("INSERT INTO Cancha (id_estado, id_tipo, nombre) VALUES (1, 2, 'Cancha 3')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'Cancha 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'Cancha 2')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (2, 'Cancha 3')")
         
         # Servicio
         cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Agua', 50.00)")
@@ -45,9 +44,11 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('15:00', '16:00')")
         
         # Turno
-        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha) VALUES (1, 1, '2025-11-20')")
-        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha) VALUES (1, 2, '2025-11-20')")
-        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha) VALUES (2, 1, '2025-11-20')")
+        # Turnos asociados a reservas (id_estado=2 'No disponible')
+        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, id_estado) VALUES (1, 1, '2025-11-20', 2)")
+        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, id_estado) VALUES (1, 2, '2025-11-20', 2)")
+        # Turno libre (id_estado=1 'Disponible')
+        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, id_estado) VALUES (2, 1, '2025-11-20', 1)")
         
         # Cliente
         cursor.execute("""INSERT INTO Cliente (nombre, apellido, DNI, telefono, mail) 
@@ -75,16 +76,16 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Equipo (id_torneo, nombre, cant_jugadores) VALUES (2, 'Equipo C', 11)")
         
         # Reserva
-        cursor.execute("""INSERT INTO Reserva (id_cliente, id_turno, monto_total, fecha_reserva, estado_reserva)
-                         VALUES (1, 1, 500.00, '2025-11-20', 'PENDIENTE')""")
-        cursor.execute("""INSERT INTO Reserva (id_cliente, id_turno, monto_total, fecha_reserva, estado_reserva)
-                         VALUES (2, 2, 500.00, '2025-11-20', 'CONFIRMADA')""")
+        cursor.execute("""INSERT INTO Reserva (id_cliente, monto_total, fecha_reserva, estado_reserva)
+                         VALUES (1, 500.00, '2025-11-20', 'PENDIENTE')""")
+        cursor.execute("""INSERT INTO Reserva (id_cliente, monto_total, fecha_reserva, estado_reserva)
+                         VALUES (2, 500.00, '2025-11-20', 'CONFIRMADA')""")
         
         # ReservaDetalle
-        cursor.execute("""INSERT INTO ReservaDetalle (id_reserva, id_cancha, id_horario, precioxhora, costoxhora, precio_total_item)
-                         VALUES (1, 1, 1, 500.00, 0.00, 500.00)""")
-        cursor.execute("""INSERT INTO ReservaDetalle (id_reserva, id_cancha, id_horario, precioxhora, costoxhora, precio_total_item)
-                         VALUES (2, 2, 2, 500.00, 50.00, 450.00)""")
+        cursor.execute("""INSERT INTO ReservaDetalle (id_reserva, id_turno, precio_total_item)
+                         VALUES (1, 1, 500.00)""")
+        cursor.execute("""INSERT INTO ReservaDetalle (id_reserva, id_turno, precio_total_item)
+                         VALUES (2, 2, 450.00)""")
         
         # Pago
         cursor.execute("""INSERT INTO Pago (id_reserva, id_metodo_pago, fecha_pago, monto, estado_pago)

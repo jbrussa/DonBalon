@@ -22,8 +22,8 @@ class CanchaRepository(BaseRepository):
         Returns:
             El objeto Cancha con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (id_estado, id_tipo, nombre) VALUES (?, ?, ?)"
-        cur = self.execute(sql, (cancha.id_estado, cancha.id_tipo, cancha.nombre))
+        sql = f"INSERT INTO {self.TABLE} (id_tipo, nombre) VALUES (?, ?)"
+        cur = self.execute(sql, (cancha.id_tipo, cancha.nombre))
         cancha.id_cancha = cur.lastrowid
         return cancha
 
@@ -52,19 +52,6 @@ class CanchaRepository(BaseRepository):
         rows = self.query_all(f"SELECT * FROM {self.TABLE}")
         return [cancha_from_dict(dict(row)) for row in rows]
 
-    def get_by_estado(self, id_estado: int) -> List[Cancha]:
-        """
-        Obtiene todas las canchas de un estado específico
-
-        Args:
-            id_estado: Id del estado
-
-        Returns:
-            Lista de objetos Cancha
-        """
-        rows = self.query_all(f"SELECT * FROM {self.TABLE} WHERE id_estado = ?", (id_estado,))
-        return [cancha_from_dict(dict(row)) for row in rows]
-
     def get_by_tipo(self, id_tipo: int) -> List[Cancha]:
         """
         Obtiene todas las canchas de un tipo específico
@@ -85,8 +72,8 @@ class CanchaRepository(BaseRepository):
         Args:
             cancha: Objeto Cancha con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET id_estado = ?, id_tipo = ?, nombre = ? WHERE id_cancha = ?"
-        self.execute(sql, (cancha.id_estado, cancha.id_tipo, cancha.nombre, cancha.id_cancha))
+        sql = f"UPDATE {self.TABLE} SET id_tipo = ?, nombre = ? WHERE id_cancha = ?"
+        self.execute(sql, (cancha.id_tipo, cancha.nombre, cancha.id_cancha))
 
     def delete(self, id_cancha: int) -> None:
         """
