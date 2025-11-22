@@ -90,26 +90,20 @@ CREATE TABLE IF NOT EXISTS Pago (
 CREATE TABLE IF NOT EXISTS Reserva (
     id_reserva INTEGER PRIMARY KEY AUTOINCREMENT,
     id_cliente INTEGER NOT NULL,
-    id_turno INTEGER NOT NULL,
     monto_total DECIMAL(10, 2) NOT NULL,
     fecha_reserva DATE NOT NULL,
     estado_reserva VARCHAR(30) NOT NULL,
-    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente),
-    FOREIGN KEY (id_turno) REFERENCES Turno(id_turno)
+    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente)
 );
 
--- Tabla: ReservaDetalle (relación de muchos a muchos entre Reserva y Cancha)
+-- Tabla: ReservaDetalle (relación de muchos a muchos entre Reserva y Turno)
 CREATE TABLE IF NOT EXISTS ReservaDetalle (
     id_detalle INTEGER PRIMARY KEY AUTOINCREMENT,
     id_reserva INTEGER NOT NULL,
-    id_cancha INTEGER NOT NULL,
-    id_horario INTEGER NOT NULL,
-    precioxhora DECIMAL(10, 2) NOT NULL,
-    costoxhora DECIMAL(10, 2) NOT NULL,
+    id_turno INTEGER NOT NULL,
     precio_total_item DECIMAL(10, 2) NOT NULL,
     FOREIGN KEY (id_reserva) REFERENCES Reserva(id_reserva),
-    FOREIGN KEY (id_cancha) REFERENCES Cancha(id_cancha),
-    FOREIGN KEY (id_horario) REFERENCES Horario(id_horario)
+    FOREIGN KEY (id_turno) REFERENCES Turno(id_turno)
 );
 
 -- Tabla: Torneo
@@ -137,7 +131,6 @@ CREATE INDEX IF NOT EXISTS idx_turno_horario ON Turno(id_horario);
 CREATE INDEX IF NOT EXISTS idx_pago_reserva ON Pago(id_reserva);
 CREATE INDEX IF NOT EXISTS idx_pago_metodo ON Pago(id_metodo_pago);
 CREATE INDEX IF NOT EXISTS idx_reserva_cliente ON Reserva(id_cliente);
-CREATE INDEX IF NOT EXISTS idx_reserva_turno ON Reserva(id_turno);
 CREATE INDEX IF NOT EXISTS idx_reserva_detalle_reserva ON ReservaDetalle(id_reserva);
-CREATE INDEX IF NOT EXISTS idx_reserva_detalle_cancha ON ReservaDetalle(id_cancha);
+CREATE INDEX IF NOT EXISTS idx_reserva_detalle_turno ON ReservaDetalle(id_turno);
 CREATE INDEX IF NOT EXISTS idx_equipo_torneo ON Equipo(id_torneo);

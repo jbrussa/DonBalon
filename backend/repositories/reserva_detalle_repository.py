@@ -22,9 +22,8 @@ class ReservaDetalleRepository(BaseRepository):
         Returns:
             El objeto ReservaDetalle con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (id_reserva, id_cancha, id_horario, precioxhora, costoxhora, precio_total_item) VALUES (?, ?, ?, ?, ?, ?)"
-        cur = self.execute(sql, (reserva_detalle.id_reserva, reserva_detalle.id_cancha, reserva_detalle.id_horario, 
-                                 reserva_detalle.precioxhora, reserva_detalle.costoxhora, reserva_detalle.precio_total_item))
+        sql = f"INSERT INTO {self.TABLE} (id_reserva, id_turno, precio_total_item) VALUES (?, ?, ?)"
+        cur = self.execute(sql, (reserva_detalle.id_reserva, reserva_detalle.id_turno, str(reserva_detalle.precio_total_item)))
         reserva_detalle.id_detalle = cur.lastrowid
         return reserva_detalle
 
@@ -66,17 +65,17 @@ class ReservaDetalleRepository(BaseRepository):
         rows = self.query_all(f"SELECT * FROM {self.TABLE} WHERE id_reserva = ?", (id_reserva,))
         return [reserva_detalle_from_dict(dict(row)) for row in rows]
 
-    def get_by_cancha(self, id_cancha: int) -> List[ReservaDetalle]:
+    def get_by_turno(self, id_turno: int) -> List[ReservaDetalle]:
         """
-        Obtiene todos los detalles de una cancha
+        Obtiene todos los detalles de un turno
 
         Args:
-            id_cancha: Id de la cancha
+            id_turno: Id del turno
 
         Returns:
             Lista de objetos ReservaDetalle
         """
-        rows = self.query_all(f"SELECT * FROM {self.TABLE} WHERE id_cancha = ?", (id_cancha,))
+        rows = self.query_all(f"SELECT * FROM {self.TABLE} WHERE id_turno = ?", (id_turno,))
         return [reserva_detalle_from_dict(dict(row)) for row in rows]
 
     def update(self, reserva_detalle: ReservaDetalle) -> None:
@@ -86,9 +85,8 @@ class ReservaDetalleRepository(BaseRepository):
         Args:
             reserva_detalle: Objeto ReservaDetalle con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET id_reserva = ?, id_cancha = ?, id_horario = ?, precioxhora = ?, costoxhora = ?, precio_total_item = ? WHERE id_detalle = ?"
-        self.execute(sql, (reserva_detalle.id_reserva, reserva_detalle.id_cancha, reserva_detalle.id_horario, 
-                          reserva_detalle.precioxhora, reserva_detalle.costoxhora, reserva_detalle.precio_total_item, 
+        sql = f"UPDATE {self.TABLE} SET id_reserva = ?, id_turno = ?, precio_total_item = ? WHERE id_detalle = ?"
+        self.execute(sql, (reserva_detalle.id_reserva, reserva_detalle.id_turno, str(reserva_detalle.precio_total_item), 
                           reserva_detalle.id_detalle))
 
     def delete(self, id_detalle: int) -> None:

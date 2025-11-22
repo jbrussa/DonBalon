@@ -6,7 +6,6 @@ from datetime import date
 
 class ReservaBase(BaseModel):
     id_cliente: int = Field(..., description="ID del cliente")
-    id_turno: int = Field(..., description="ID del turno")
     monto_total: Decimal = Field(..., description="Monto total de la reserva")
     fecha_reserva: date = Field(..., description="Fecha de la reserva")
     estado_reserva: str = Field(..., description="Estado de la reserva")
@@ -18,7 +17,6 @@ class ReservaCreate(ReservaBase):
 
 class ReservaUpdate(BaseModel):
     id_cliente: Optional[int] = None
-    id_turno: Optional[int] = None
     monto_total: Optional[Decimal] = None
     fecha_reserva: Optional[date] = None
     estado_reserva: Optional[str] = None
