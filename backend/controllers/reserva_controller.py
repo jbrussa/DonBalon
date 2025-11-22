@@ -33,24 +33,26 @@ def get_reserva(id_reserva: int, service: ReservaService = Depends(get_reserva_s
     return ReservaResponse(**reserva.to_dict())
 
 
+from schemas.reserva_transaccion_schema import ReservaTransaccionSchema
+
 @router.post("/", response_model=ReservaResponse, status_code=status.HTTP_201_CREATED)
-def create_reserva(reserva_data: ReservaCreate, service: ReservaService = Depends(get_reserva_service)):
-    """Crear una nueva reserva"""
-    # Conversión manual de Schema a Clase de Dominio
-    reserva = Reserva(
-        id_cliente=reserva_data.id_cliente,
-        monto_total=reserva_data.monto_total,
-        fecha_reserva=reserva_data.fecha_reserva,
-        estado_reserva=reserva_data.estado_reserva
-    )
-    
+def create_reserva(reserva_data: ReservaTransaccionSchema, service: ReservaService = Depends(get_reserva_service)):
+    """
+    Crear una nueva reserva transaccional.
+    Recibe cliente, método de pago y lista de items (cancha/horario/fecha).
+    """
     try:
-        created_reserva = service.insert(reserva)
+        created_reserva = service.registrar_reserva_completa(reserva_data)
         return ReservaResponse(**created_reserva.to_dict())
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno al procesar la reserva: {str(e)}"
         )
 
 

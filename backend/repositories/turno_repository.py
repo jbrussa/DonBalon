@@ -116,6 +116,26 @@ class TurnoRepository(BaseRepository):
         sql = f"DELETE FROM {self.TABLE} WHERE id_turno = ?"
         self.execute(sql, (id_turno,))
 
+    def get_by_cancha_horario_fecha(self, id_cancha: int, id_horario: int, fecha: date) -> Optional[Turno]:
+        """
+        Obtiene un turno específico por cancha, horario y fecha
+
+        Args:
+            id_cancha: Id de la cancha
+            id_horario: Id del horario
+            fecha: Fecha del turno
+
+        Returns:
+            Objeto Turno o None si no existe
+        """
+        row = self.query_one(
+            f"SELECT * FROM {self.TABLE} WHERE id_cancha = ? AND id_horario = ? AND fecha = ?",
+            (id_cancha, id_horario, fecha),
+        )
+        if not row:
+            return None
+        return turno_from_dict(dict(row))
+
     def exists(self, id_turno: int) -> bool:
         """
         Verifica si un Turno existe

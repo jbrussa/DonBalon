@@ -15,5 +15,8 @@ class TipoCancha:
 
 def from_dict(data: Dict[str, Any]) -> "TipoCancha":
     precio = data.get("precioxhora")
+    if precio is None:
+        precio = data.get("precio_hora")
+    
     precio = Decimal(str(precio)) if precio is not None else Decimal("0.00")
     return TipoCancha(id_tipo=data.get("id_tipo"), descripcion=data.get("descripcion", ""), precioxhora=precio)

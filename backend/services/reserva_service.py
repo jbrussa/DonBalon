@@ -1,13 +1,33 @@
 import sqlite3
 from typing import List, Optional
 from decimal import Decimal
+from datetime import date
 from classes.reserva import Reserva
+from classes.reserva_detalle import ReservaDetalle
+from classes.turno import Turno
+from classes.pago import Pago
 from repositories.reserva_repository import ReservaRepository
+from repositories.reserva_detalle_repository import ReservaDetalleRepository
+from repositories.turno_repository import TurnoRepository
+from repositories.pago_repository import PagoRepository
+from repositories.cancha_repository import CanchaRepository
+from repositories.tipo_cancha_repository import TipoCanchaRepository
+from schemas.reserva_transaccion_schema import ReservaTransaccionSchema
+from data.database_connection import DatabaseConnection
 
 
 class ReservaService:
     def __init__(self, db_path: Optional[str] = None, connection: Optional[sqlite3.Connection] = None):
-        self.repository = ReservaRepository(db_path, connection)
+        self.db_conn = DatabaseConnection()
+        # Si nos pasan una conexión, la usamos (para tests), sino usamos la singleton
+        self.connection = connection if connection else self.db_conn.get_connection()
+        
+        self.repository = ReservaRepository(connection=self.connection)
+        self.detalle_repository = ReservaDetalleRepository(connection=self.connection)
+        self.turno_repository = TurnoRepository(connection=self.connection)
+        self.pago_repository = PagoRepository(connection=self.connection)
+        self.cancha_repository = CanchaRepository(connection=self.connection)
+        self.tipo_cancha_repository = TipoCanchaRepository(connection=self.connection)
 
     def validate(self, obj: Reserva) -> None:
         if not isinstance(obj.id_cliente, int):
@@ -37,3 +57,107 @@ class ReservaService:
 
     def list_all(self) -> List[Reserva]:
         return self.repository.get_all()
+
+    def registrar_reserva_completa(self, data: ReservaTransaccionSchema) -> Reserva:
+        """
+        Crea una reserva completa de forma transaccional.
+        Usa el enfoque Two-Pass:
+        1. Valida disponibilidad y calcula precios en memoria.
+        2. Abre transacción y persiste todo.
+        """
+        
+        # --- PASADA 1: Validación y Cálculo (Lectura) ---
+        total_reserva = Decimal("0.00")
+        items_procesados = []
+
+        for item in data.items:
+            # 1. Verificar si ya existe un turno para esa cancha/horario/fecha
+            existing_turno = self.turno_repository.get_by_cancha_horario_fecha(
+                item.id_cancha, item.id_horario, item.fecha
+            )
+            if existing_turno:
+                raise ValueError(f"El turno para la cancha {item.id_cancha} en el horario {item.id_horario} el día {item.fecha} ya está ocupado.")
+
+            # 2. Obtener precio de la cancha
+            cancha = self.cancha_repository.get_by_id(item.id_cancha)
+            if not cancha:
+                raise ValueError(f"La cancha {item.id_cancha} no existe.")
+            
+            tipo_cancha = self.tipo_cancha_repository.get_by_id(cancha.id_tipo)
+            if not tipo_cancha:
+                raise ValueError(f"El tipo de cancha {cancha.id_tipo} no existe.")
+            
+            precio_item = tipo_cancha.precioxhora
+            total_reserva += precio_item
+            
+            items_procesados.append({
+                "item_data": item,
+                "precio": precio_item
+            })
+
+        # --- PASADA 2: Persistencia (Escritura Transaccional) ---
+        try:
+            # Deshabilitar autocommit en los repositorios para manejar la transacción manualmente
+            self.repository.autocommit = False
+            self.turno_repository.autocommit = False
+            self.detalle_repository.autocommit = False
+            self.pago_repository.autocommit = False
+
+            # Iniciar transacción explícita (aunque sqlite3 lo maneja, aseguramos atomicidad)
+            # Nota: self.connection es la misma para todos los repositorios
+            
+            # 1. Crear Reserva
+            nueva_reserva = Reserva(
+                id_cliente=data.id_cliente,
+                monto_total=total_reserva,
+                fecha_reserva=date.today(),
+                estado_reserva="Confirmada" # Asumimos confirmada si se paga/registra
+            )
+            reserva_creada = self.repository.create(nueva_reserva)
+
+            # 2. Procesar Items (Turnos y Detalles)
+            for procesado in items_procesados:
+                item = procesado["item_data"]
+                precio = procesado["precio"]
+
+                # Crear Turno
+                nuevo_turno = Turno(
+                    id_cancha=item.id_cancha,
+                    id_horario=item.id_horario,
+                    fecha=item.fecha
+                )
+                turno_creado = self.turno_repository.create(nuevo_turno)
+
+                # Crear Detalle
+                nuevo_detalle = ReservaDetalle(
+                    id_reserva=reserva_creada.id_reserva,
+                    id_turno=turno_creado.id_turno,
+                    precio_total_item=precio
+                )
+                self.detalle_repository.create(nuevo_detalle)
+
+            # 3. Registrar Pago
+            nuevo_pago = Pago(
+                id_reserva=reserva_creada.id_reserva,
+                id_metodo_pago=data.id_metodo_pago,
+                fecha_pago=date.today(),
+                monto=total_reserva,
+                estado_pago="Completado"
+            )
+            self.pago_repository.create(nuevo_pago)
+
+            # Confirmar transacción
+            self.connection.commit()
+            
+            return reserva_creada
+
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+        
+        finally:
+            # Restaurar el estado "natural" de los repositorios
+            self.repository.autocommit = True
+            self.turno_repository.autocommit = True
+            self.detalle_repository.autocommit = True
+            self.pago_repository.autocommit = True

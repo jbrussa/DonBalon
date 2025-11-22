@@ -24,7 +24,7 @@ class PagoRepository(BaseRepository):
             El objeto Pago con el id asignado
         """
         sql = f"INSERT INTO {self.TABLE} (id_reserva, id_metodo_pago, fecha_pago, monto, estado_pago) VALUES (?, ?, ?, ?, ?)"
-        cur = self.execute(sql, (pago.id_reserva, pago.id_metodo_pago, pago.fecha_pago, pago.monto, pago.estado_pago))
+        cur = self.execute(sql, (pago.id_reserva, pago.id_metodo_pago, pago.fecha_pago, str(pago.monto), pago.estado_pago))
         pago.id_pago = cur.lastrowid
         return pago
 
@@ -100,7 +100,7 @@ class PagoRepository(BaseRepository):
             pago: Objeto Pago con los datos a actualizar
         """
         sql = f"UPDATE {self.TABLE} SET id_reserva = ?, id_metodo_pago = ?, fecha_pago = ?, monto = ?, estado_pago = ? WHERE id_pago = ?"
-        self.execute(sql, (pago.id_reserva, pago.id_metodo_pago, pago.fecha_pago, pago.monto, pago.estado_pago, pago.id_pago))
+        self.execute(sql, (pago.id_reserva, pago.id_metodo_pago, pago.fecha_pago, str(pago.monto), pago.estado_pago, pago.id_pago))
 
     def delete(self, id_pago: int) -> None:
         """

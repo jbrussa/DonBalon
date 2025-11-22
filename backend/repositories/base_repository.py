@@ -39,6 +39,8 @@ class BaseRepository:
             self.conn.row_factory = sqlite3.Row
             # Habilitar restricciones de claves foráneas
             self.conn.execute("PRAGMA foreign_keys = ON")
+            
+        self.autocommit = True
 
     def execute(self, sql: str, params: Tuple[Any, ...] = ()) -> sqlite3.Cursor:
         """
@@ -53,7 +55,8 @@ class BaseRepository:
         """
         cur = self.conn.cursor()
         cur.execute(sql, params)
-        self.conn.commit()
+        if self.autocommit:
+            self.conn.commit()
         return cur
 
     def query_one(self, sql: str, params: Tuple[Any, ...] = ()) -> Optional[sqlite3.Row]:
