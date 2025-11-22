@@ -12,8 +12,8 @@ class ReservaService:
     def validate(self, obj: Reserva) -> None:
         if not isinstance(obj.id_cliente, int):
             raise ValueError("El id_cliente debe ser un entero.")
-        if not isinstance(obj.id_horario, int):
-            raise ValueError("El id_horario debe ser un entero.")
+        if not isinstance(obj.id_turno, int):
+            raise ValueError("El id_turno debe ser un entero.")
         if not isinstance(obj.monto_total, Decimal):
             raise ValueError("El monto_total debe ser un Decimal.")
         if not obj.fecha_reserva:

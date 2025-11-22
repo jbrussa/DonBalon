@@ -39,7 +39,7 @@ def create_reserva(reserva_data: ReservaCreate, service: ReservaService = Depend
     # Conversión manual de Schema a Clase de Dominio
     reserva = Reserva(
         id_cliente=reserva_data.id_cliente,
-        id_horario=reserva_data.id_horario,
+        id_turno=reserva_data.id_turno,
         monto_total=reserva_data.monto_total,
         fecha_reserva=reserva_data.fecha_reserva,
         estado_reserva=reserva_data.estado_reserva
@@ -68,7 +68,7 @@ def update_reserva(id_reserva: int, reserva_data: ReservaUpdate, service: Reserv
     
     # 2. Merge inteligente
     nuevo_cliente = reserva_data.id_cliente if reserva_data.id_cliente is not None else reserva_actual.id_cliente
-    nuevo_horario = reserva_data.id_horario if reserva_data.id_horario is not None else reserva_actual.id_horario
+    nuevo_turno = reserva_data.id_turno if reserva_data.id_turno is not None else reserva_actual.id_turno
     nuevo_monto = reserva_data.monto_total if reserva_data.monto_total is not None else reserva_actual.monto_total
     nueva_fecha = reserva_data.fecha_reserva if reserva_data.fecha_reserva is not None else reserva_actual.fecha_reserva
     nuevo_estado = reserva_data.estado_reserva if reserva_data.estado_reserva is not None else reserva_actual.estado_reserva
@@ -77,7 +77,7 @@ def update_reserva(id_reserva: int, reserva_data: ReservaUpdate, service: Reserv
     reserva_a_guardar = Reserva(
         id_reserva=id_reserva,
         id_cliente=nuevo_cliente,
-        id_horario=nuevo_horario,
+        id_turno=nuevo_turno,
         monto_total=nuevo_monto,
         fecha_reserva=nueva_fecha,
         estado_reserva=nuevo_estado

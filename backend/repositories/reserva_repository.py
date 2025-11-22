@@ -23,8 +23,8 @@ class ReservaRepository(BaseRepository):
         Returns:
             El objeto Reserva con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (id_cliente, id_horario, monto_total, fecha_reserva, estado_reserva) VALUES (?, ?, ?, ?, ?)"
-        cur = self.execute(sql, (reserva.id_cliente, reserva.id_horario, reserva.monto_total, reserva.fecha_reserva, reserva.estado_reserva))
+        sql = f"INSERT INTO {self.TABLE} (id_cliente, id_turno, monto_total, fecha_reserva, estado_reserva) VALUES (?, ?, ?, ?, ?)"
+        cur = self.execute(sql, (reserva.id_cliente, reserva.id_turno, reserva.monto_total, reserva.fecha_reserva, reserva.estado_reserva))
         reserva.id_reserva = cur.lastrowid
         return reserva
 
@@ -99,8 +99,8 @@ class ReservaRepository(BaseRepository):
         Args:
             reserva: Objeto Reserva con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET id_cliente = ?, id_horario = ?, monto_total = ?, fecha_reserva = ?, estado_reserva = ? WHERE id_reserva = ?"
-        self.execute(sql, (reserva.id_cliente, reserva.id_horario, reserva.monto_total, reserva.fecha_reserva, reserva.estado_reserva, reserva.id_reserva))
+        sql = f"UPDATE {self.TABLE} SET id_cliente = ?, id_turno = ?, monto_total = ?, fecha_reserva = ?, estado_reserva = ? WHERE id_reserva = ?"
+        self.execute(sql, (reserva.id_cliente, reserva.id_turno, reserva.monto_total, reserva.fecha_reserva, reserva.estado_reserva, reserva.id_reserva))
 
     def delete(self, id_reserva: int) -> None:
         """

@@ -75,9 +75,9 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Equipo (id_torneo, nombre, cant_jugadores) VALUES (2, 'Equipo C', 11)")
         
         # Reserva
-        cursor.execute("""INSERT INTO Reserva (id_cliente, id_horario, monto_total, fecha_reserva, estado_reserva)
+        cursor.execute("""INSERT INTO Reserva (id_cliente, id_turno, monto_total, fecha_reserva, estado_reserva)
                          VALUES (1, 1, 500.00, '2025-11-20', 'PENDIENTE')""")
-        cursor.execute("""INSERT INTO Reserva (id_cliente, id_horario, monto_total, fecha_reserva, estado_reserva)
+        cursor.execute("""INSERT INTO Reserva (id_cliente, id_turno, monto_total, fecha_reserva, estado_reserva)
                          VALUES (2, 2, 500.00, '2025-11-20', 'CONFIRMADA')""")
         
         # ReservaDetalle
