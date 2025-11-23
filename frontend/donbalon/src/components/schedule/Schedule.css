@@ -1,40 +1,150 @@
 /* Basic grid for schedule */
-.schedule-root { font-family: Inter, Arial, sans-serif; padding: 16px; }
-.schedule-controls { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.legend { display:flex; gap:12px; align-items:center; }
-.legend-item { display:flex; align-items:center; gap:6px; color:#444; font-size:14px; }
-.legend-swatch { width:16px; height:12px; border-radius:3px; display:inline-block; }
-.legend-swatch.occupied { background:#7f8c8d; }
-.legend-swatch.hover { background:linear-gradient(90deg,#18a16b,#1fb97a); }
-
-
-.schedule-grid { border:1px solid #e6e9ee; border-radius:8px; overflow:hidden; background:#fff; }
-.schedule-header { display:grid; align-items:center; border-bottom:1px solid #eee; padding:8px 0; }
-.schedule-left.header-left { padding-left:12px; font-weight:600; }
-.slot.header-slot { background:transparent; color:#666; text-align:center; padding:6px 8px; }
-
-.schedule-body { max-height:600px; overflow:auto; }
-.schedule-row { display:grid; align-items:stretch; border-bottom:1px solid #f2f4f7; }
-.schedule-left { padding:10px 12px; border-right:1px solid #f2f4f7; background:#fafafa; display:flex; flex-direction:column; justify-content:center; }
-.cancha-name { font-weight:600; margin-bottom:4px; }
-.cancha-meta { font-size:12px; color:#666; }
-
-.slot { height:48px; border-radius:6px; position:relative; overflow:hidden; margin:8px; }
-.slot.header-slot { margin:0; display:flex; align-items:center; justify-content:center; }
-.slot.available { background:rgba(23,162,184,0.04); cursor:pointer; }
-.slot.available:hover { background:transparent; }
-.slot.occupied { background:#95a5a6; cursor:not-allowed; }
-.slot-hover { position:absolute; inset:8px; background:linear-gradient(90deg,#18a16b,#1fb97a); opacity:0.95; border-radius:6px; transition:all .12s ease; }
-
-/* make the header and row slots align flush (remove per-slot gaps at grid level) */
-.schedule-header .slot.header-slot, .schedule-row .slot { margin:0; }
-
-@media (max-width:900px){
-  .schedule-left.header-left, .schedule-left { width:auto; padding-left:8px; }
-  .slot, .slot.header-slot { min-width:40px; height:44px; }
+.schedule-root {
+  font-family: Inter, Arial, sans-serif;
+  padding: 16px;
+}
+.schedule-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.legend {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #444;
+  font-size: 14px;
+}
+.legend-swatch {
+  width: 16px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.legend-swatch.occupied {
+  background: #7f8c8d;
+}
+.legend-swatch.hover {
+  background: linear-gradient(90deg, #18a16b, #1fb97a);
 }
 
-@media (max-width:900px){
-  .schedule-left.header-left, .schedule-left { width:140px; }
-  .slot, .slot.header-slot { min-width:60px; }
+.schedule-grid {
+  border: 1px solid #e6e9ee;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.schedule-header {
+  display: grid;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+.schedule-left.header-left {
+  padding-left: 12px;
+  font-weight: 600;
+}
+.slot.header-slot {
+  background: transparent;
+  color: #666;
+  text-align: center;
+  padding: 6px 8px;
+}
+
+.schedule-body {
+  /* Increase visible height so the schedule appears longer */
+  max-height: 1200px;
+  overflow: auto;
+  padding-bottom: 18px;
+}
+.schedule-row {
+  display: grid;
+  align-items: stretch;
+  border-bottom: 1px solid #f2f4f7;
+}
+.schedule-left {
+  padding: 10px 12px;
+  border-right: 1px solid #f2f4f7;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.cancha-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.cancha-meta {
+  font-size: 12px;
+  color: #666;
+}
+
+.slot {
+  height: 64px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  margin: 8px;
+}
+.slot.header-slot {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.slot.available {
+  background: rgba(23, 162, 184, 0.04);
+  cursor: pointer;
+}
+.slot.available:hover {
+  background: transparent;
+}
+.slot.occupied {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+.slot-hover {
+  position: absolute;
+  inset: 8px;
+  background: linear-gradient(90deg, #18a16b, #1fb97a);
+  opacity: 0.95;
+  border-radius: 6px;
+  transition: all 0.12s ease;
+}
+
+/* make the header and row slots align flush (remove per-slot gaps at grid level) */
+.schedule-header .slot.header-slot,
+.schedule-row .slot {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .schedule-left.header-left,
+  .schedule-left {
+    width: auto;
+    padding-left: 8px;
+  }
+  .slot,
+  .slot.header-slot {
+    min-width: 40px;
+    height: 54px; /* slightly reduced on smaller screens */
+  }
+}
+
+@media (max-width: 520px) {
+  .schedule-left.header-left,
+  .schedule-left {
+    width: 140px;
+  }
+  .slot,
+  .slot.header-slot {
+    min-width: 60px;
+    height: 54px;
+  }
 }

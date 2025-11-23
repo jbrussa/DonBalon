@@ -1,0 +1,31 @@
+.site-footer {
+  background: linear-gradient(
+    180deg,
+    rgba(247, 238, 230, 0.6),
+    rgba(247, 238, 230, 0.8)
+  );
+  padding: 10px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #6b6b6b;
+}
+.footer-right a {
+  color: #6b6b6b;
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .footer-inner {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+}
