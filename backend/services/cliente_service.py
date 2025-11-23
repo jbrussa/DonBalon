@@ -17,10 +17,6 @@ class ClienteService:
             raise ValueError("El apellido del cliente es obligatorio.")
         if len(obj.apellido) > 100:
             raise ValueError("El apellido del cliente no puede exceder los 100 caracteres.")
-        if not obj.dni:
-            raise ValueError("El DNI del cliente es obligatorio.")
-        if len(obj.dni) > 20:
-            raise ValueError("El DNI del cliente no puede exceder los 20 caracteres.")
         if not obj.telefono:
             raise ValueError("El teléfono del cliente es obligatorio.")
         if len(obj.telefono) > 30:
@@ -31,6 +27,8 @@ class ClienteService:
             raise ValueError("El mail del cliente no puede exceder los 100 caracteres.")
         if "@" not in obj.mail:
             raise ValueError("El mail del cliente no tiene un formato válido.")
+        if len(obj.password) > 20:
+            raise ValueError("La contraseña no puede exceder los 20 caracteres.")
 
     def insert(self, obj: Cliente) -> Cliente:
         self.validate(obj)

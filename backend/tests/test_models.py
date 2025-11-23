@@ -35,7 +35,7 @@ def roundtrip(factory, instance):
 
 
 def test_models_roundtrip():
-    cliente = Cliente(1, "Juan", "Perez", "12345678", "1234", "a@b.com")
+    cliente = Cliente(1, "Juan", "Perez", "1234", "a@b.com", "password123", True)
     tipo_pago = TipoPago(1, "Efectivo")
     metodo_pago = MetodoPago(1, "Tarjeta")
     pago = Pago(1, 10, 1, datetime.date(2025, 1, 2), Decimal("150.50"), "OK")

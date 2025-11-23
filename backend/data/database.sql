@@ -52,10 +52,9 @@ CREATE TABLE IF NOT EXISTS Turno (
     id_cancha INTEGER NOT NULL,
     id_horario INTEGER NOT NULL,
     fecha DATE NOT NULL,
-    id_estado INTEGER NOT NULL,
+    estado_turno TEXT NOT NULL,
     FOREIGN KEY (id_cancha) REFERENCES Cancha(id_cancha),
-    FOREIGN KEY (id_horario) REFERENCES Horario(id_horario),
-    FOREIGN KEY (id_estado) REFERENCES Estado(id_estado)
+    FOREIGN KEY (id_horario) REFERENCES Horario(id_horario)
 );
 
 -- Tabla: Cliente
@@ -63,9 +62,10 @@ CREATE TABLE IF NOT EXISTS Cliente (
     id_cliente INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
-    DNI VARCHAR(20) NOT NULL UNIQUE,
     telefono VARCHAR(30) NOT NULL,
-    mail VARCHAR(100) NOT NULL
+    mail VARCHAR(100) NOT NULL,
+    password VARCHAR(20) NOT NULL DEFAULT '',
+    admin BOOLEAN NOT NULL DEFAULT 0
 );
 
 -- Tabla: MetodoPago
@@ -127,7 +127,6 @@ CREATE TABLE IF NOT EXISTS Equipo (
 CREATE INDEX IF NOT EXISTS idx_cancha_tipo ON Cancha(id_tipo);
 CREATE INDEX IF NOT EXISTS idx_turno_cancha ON Turno(id_cancha);
 CREATE INDEX IF NOT EXISTS idx_turno_horario ON Turno(id_horario);
-CREATE INDEX IF NOT EXISTS idx_turno_estado ON Turno(id_estado);
 CREATE INDEX IF NOT EXISTS idx_pago_reserva ON Pago(id_reserva);
 CREATE INDEX IF NOT EXISTS idx_pago_metodo ON Pago(id_metodo_pago);
 CREATE INDEX IF NOT EXISTS idx_reserva_cliente ON Reserva(id_cliente);

@@ -6,6 +6,7 @@ def insert_sample_data(db_path):
     Inserta datos de ejemplo en la base de datos
     """
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA foreign_keys = ON")
     cursor = conn.cursor()
     
     try:
@@ -44,19 +45,14 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('15:00', '16:00')")
         
         # Turno
-        # Turnos asociados a reservas (id_estado=2 'No disponible')
-        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, id_estado) VALUES (1, 1, '2025-11-20', 2)")
-        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, id_estado) VALUES (1, 2, '2025-11-20', 2)")
-        # Turno libre (id_estado=1 'Disponible')
-        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, id_estado) VALUES (2, 1, '2025-11-20', 1)")
+        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, estado_turno) VALUES (1, 1, '2025-11-20', 'DISPONIBLE')")
+        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, estado_turno) VALUES (1, 2, '2025-11-20', 'DISPONIBLE')")
+        cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, estado_turno) VALUES (2, 1, '2025-11-20', 'NO DISPONIBLE')")
         
         # Cliente
-        cursor.execute("""INSERT INTO Cliente (nombre, apellido, DNI, telefono, mail) 
-                         VALUES ('Juan', 'Perez', '12345678', '1234567890', 'juan@example.com')""")
-        cursor.execute("""INSERT INTO Cliente (nombre, apellido, DNI, telefono, mail) 
-                         VALUES ('Maria', 'Garcia', '87654321', '0987654321', 'maria@example.com')""")
-        cursor.execute("""INSERT INTO Cliente (nombre, apellido, DNI, telefono, mail) 
-                         VALUES ('Carlos', 'Lopez', '11223344', '1122334455', 'carlos@example.com')""")
+        cursor.execute("INSERT INTO Cliente (id_cliente, nombre, apellido, telefono, mail, password, admin) VALUES (1, 'Juan', 'Perez', '1234567890', 'juan@example.com', 'pass123', 1)")
+        cursor.execute("INSERT INTO Cliente (id_cliente, nombre, apellido, telefono, mail, password, admin) VALUES (2, 'Maria', 'Garcia', '0987654321', 'maria@example.com', 'pass456', 0)")
+        cursor.execute("INSERT INTO Cliente (id_cliente, nombre, apellido, telefono, mail, password, admin) VALUES (3, 'Carlos', 'Lopez', '1122334455', 'carlos@example.com', 'pass789', 0)")
         
         
         # MetodoPago

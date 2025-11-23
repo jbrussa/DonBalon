@@ -6,18 +6,20 @@ class Cliente:
     id_cliente: Optional[int] = None
     nombre: str = ""
     apellido: str = ""
-    dni: str = ""
     telefono: str = ""
     mail: str = ""
+    password: str = ""
+    admin: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id_cliente": self.id_cliente,
             "nombre": self.nombre,
             "apellido": self.apellido,
-            "dni": self.dni,
             "telefono": self.telefono,
             "mail": self.mail,
+            "password": self.password,
+            "admin": self.admin,
         }
 
 
@@ -30,7 +32,8 @@ def from_dict(data: Dict[str, Any]) -> "Cliente":
         id_cliente=data.get("id_cliente"),
         nombre=data.get("nombre", ""),
         apellido=data.get("apellido", ""),
-        dni=data.get("dni", ""),
         telefono=data.get("telefono", ""),
         mail=data.get("mail", ""),
+        password=data.get("password", ""),
+        admin=bool(data.get("admin", False)),
     )

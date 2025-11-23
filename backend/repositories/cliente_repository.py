@@ -22,8 +22,8 @@ class ClienteRepository(BaseRepository):
         Returns:
             El objeto Cliente con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (nombre, apellido, DNI, telefono, mail) VALUES (?, ?, ?, ?, ?)"
-        cur = self.execute(sql, (cliente.nombre, cliente.apellido, cliente.dni, cliente.telefono, cliente.mail))
+        sql = f"INSERT INTO {self.TABLE} (nombre, apellido, telefono, mail, password, admin) VALUES (?, ?, ?, ?, ?, ?)"
+        cur = self.execute(sql, (cliente.nombre, cliente.apellido, cliente.telefono, cliente.mail, cliente.password, cliente.admin))
         cliente.id_cliente = cur.lastrowid
         return cliente
 
@@ -38,21 +38,6 @@ class ClienteRepository(BaseRepository):
             Objeto Cliente o None si no existe
         """
         row = self.query_one(f"SELECT * FROM {self.TABLE} WHERE id_cliente = ?", (id_cliente,))
-        if not row:
-            return None
-        return cliente_from_dict(dict(row))
-
-    def get_by_dni(self, dni: str) -> Optional[Cliente]:
-        """
-        Obtiene un Cliente por su DNI
-
-        Args:
-            dni: DNI del cliente
-
-        Returns:
-            Objeto Cliente o None si no existe
-        """
-        row = self.query_one(f"SELECT * FROM {self.TABLE} WHERE DNI = ?", (dni,))
         if not row:
             return None
         return cliente_from_dict(dict(row))
@@ -87,8 +72,8 @@ class ClienteRepository(BaseRepository):
         Args:
             cliente: Objeto Cliente con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET nombre = ?, apellido = ?, DNI = ?, telefono = ?, mail = ? WHERE id_cliente = ?"
-        self.execute(sql, (cliente.nombre, cliente.apellido, cliente.dni, cliente.telefono, cliente.mail, cliente.id_cliente))
+        sql = f"UPDATE {self.TABLE} SET nombre = ?, apellido = ?, telefono = ?, mail = ?, password = ?, admin = ? WHERE id_cliente = ?"
+        self.execute(sql, (cliente.nombre, cliente.apellido, cliente.telefono, cliente.mail, cliente.password, cliente.admin, cliente.id_cliente))
 
     def delete(self, id_cliente: int) -> None:
         """
@@ -111,17 +96,4 @@ class ClienteRepository(BaseRepository):
             True si existe, False en caso contrario
         """
         row = self.query_one(f"SELECT 1 FROM {self.TABLE} WHERE id_cliente = ?", (id_cliente,))
-        return row is not None
-
-    def exists_by_dni(self, dni: str) -> bool:
-        """
-        Verifica si un Cliente existe por su DNI
-
-        Args:
-            dni: DNI a verificar
-
-        Returns:
-            True si existe, False en caso contrario
-        """
-        row = self.query_one(f"SELECT 1 FROM {self.TABLE} WHERE DNI = ?", (dni,))
         return row is not None

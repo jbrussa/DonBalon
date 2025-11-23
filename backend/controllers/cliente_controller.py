@@ -40,8 +40,10 @@ def create_cliente(cliente_data: ClienteCreate, service: ClienteService = Depend
     cliente = Cliente(
         nombre=cliente_data.nombre,
         apellido=cliente_data.apellido,
-        email=cliente_data.email,
-        telefono=cliente_data.telefono
+        mail=cliente_data.mail,
+        telefono=cliente_data.telefono,
+        password=cliente_data.password,
+        admin=cliente_data.admin
     )
     
     try:
@@ -68,16 +70,20 @@ def update_cliente(id_cliente: int, cliente_data: ClienteUpdate, service: Client
     # 2. Merge inteligente
     nuevo_nombre = cliente_data.nombre if cliente_data.nombre is not None else cliente_actual.nombre
     nuevo_apellido = cliente_data.apellido if cliente_data.apellido is not None else cliente_actual.apellido
-    nuevo_email = cliente_data.email if cliente_data.email is not None else cliente_actual.email
+    nuevo_mail = cliente_data.mail if cliente_data.mail is not None else cliente_actual.mail
     nuevo_telefono = cliente_data.telefono if cliente_data.telefono is not None else cliente_actual.telefono
+    nuevo_password = cliente_data.password if cliente_data.password is not None else cliente_actual.password
+    nuevo_admin = cliente_data.admin if cliente_data.admin is not None else cliente_actual.admin
 
     # 3. Crear la instancia para actualizar con los datos mezclados
     cliente_a_guardar = Cliente(
         id_cliente=id_cliente,
         nombre=nuevo_nombre,
         apellido=nuevo_apellido,
-        email=nuevo_email,
-        telefono=nuevo_telefono
+        mail=nuevo_mail,
+        telefono=nuevo_telefono,
+        password=nuevo_password,
+        admin=nuevo_admin
     )
     
     try:
