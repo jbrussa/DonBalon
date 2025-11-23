@@ -5,7 +5,7 @@ from decimal import Decimal
 
 class TipoCanchaBase(BaseModel):
     descripcion: Optional[str] = Field(None, description="Descripción del tipo de cancha")
-    precio_base: Decimal = Field(..., description="Precio base del tipo de cancha")
+    precio_hora: Decimal = Field(..., description="Precio por hora del tipo de cancha")
 
 
 class TipoCanchaCreate(TipoCanchaBase):
@@ -14,7 +14,7 @@ class TipoCanchaCreate(TipoCanchaBase):
 
 class TipoCanchaUpdate(BaseModel):
     descripcion: Optional[str] = None
-    precio_base: Optional[Decimal] = None
+    precio_hora: Optional[Decimal] = None
 
 
 class TipoCanchaResponse(TipoCanchaBase):

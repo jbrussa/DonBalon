@@ -39,7 +39,7 @@ def create_tipo_cancha(tipo_data: TipoCanchaCreate, service: TipoCanchaService =
     # Conversión manual de Schema a Clase de Dominio
     tipo = TipoCancha(
         descripcion=tipo_data.descripcion,
-        precio_base=tipo_data.precio_base
+        precio_hora=tipo_data.precio_hora
     )
     
     try:
@@ -65,13 +65,13 @@ def update_tipo_cancha(id_tipo: int, tipo_data: TipoCanchaUpdate, service: TipoC
     
     # 2. Merge inteligente
     nueva_descripcion = tipo_data.descripcion if tipo_data.descripcion is not None else tipo_actual.descripcion
-    nuevo_precio = tipo_data.precio_base if tipo_data.precio_base is not None else tipo_actual.precio_base
+    nuevo_precio = tipo_data.precio_hora if tipo_data.precio_hora is not None else tipo_actual.precio_hora
 
     # 3. Crear la instancia para actualizar con los datos mezclados
     tipo_a_guardar = TipoCancha(
         id_tipo=id_tipo,
         descripcion=nueva_descripcion,
-        precio_base=nuevo_precio
+        precio_hora=nuevo_precio
     )
     
     try:

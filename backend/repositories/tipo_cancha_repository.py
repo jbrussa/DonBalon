@@ -23,7 +23,7 @@ class TipoCanchaRepository(BaseRepository):
             El objeto TipoCancha con el id asignado
         """
         sql = f"INSERT INTO {self.TABLE} (descripcion, precio_hora) VALUES (?, ?)"
-        cur = self.execute(sql, (tipo_cancha.descripcion, tipo_cancha.precioxhora))
+        cur = self.execute(sql, (tipo_cancha.descripcion, str(tipo_cancha.precio_hora)))
         tipo_cancha.id_tipo = cur.lastrowid
         return tipo_cancha
 
@@ -60,7 +60,7 @@ class TipoCanchaRepository(BaseRepository):
             tipo_cancha: Objeto TipoCancha con los datos a actualizar
         """
         sql = f"UPDATE {self.TABLE} SET descripcion = ?, precio_hora = ? WHERE id_tipo = ?"
-        self.execute(sql, (tipo_cancha.descripcion, tipo_cancha.precioxhora, tipo_cancha.id_tipo))
+        self.execute(sql, (tipo_cancha.descripcion, str(tipo_cancha.precio_hora), tipo_cancha.id_tipo))
 
     def delete(self, id_tipo: int) -> None:
         """
