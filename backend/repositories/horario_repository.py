@@ -23,7 +23,11 @@ class HorarioRepository(BaseRepository):
             El objeto Horario con el id asignado
         """
         sql = f"INSERT INTO {self.TABLE} (hora_inicio, hora_fin) VALUES (?, ?)"
-        cur = self.execute(sql, (horario.hora_inicio, horario.hora_fin))
+        # Convertir time a str para SQLite
+        inicio_str = horario.hora_inicio.isoformat() if horario.hora_inicio else None
+        fin_str = horario.hora_fin.isoformat() if horario.hora_fin else None
+        
+        cur = self.execute(sql, (inicio_str, fin_str))
         horario.id_horario = cur.lastrowid
         return horario
 
@@ -60,7 +64,11 @@ class HorarioRepository(BaseRepository):
             horario: Objeto Horario con los datos a actualizar
         """
         sql = f"UPDATE {self.TABLE} SET hora_inicio = ?, hora_fin = ? WHERE id_horario = ?"
-        self.execute(sql, (horario.hora_inicio, horario.hora_fin, horario.id_horario))
+        # Convertir time a str para SQLite
+        inicio_str = horario.hora_inicio.isoformat() if horario.hora_inicio else None
+        fin_str = horario.hora_fin.isoformat() if horario.hora_fin else None
+        
+        self.execute(sql, (inicio_str, fin_str, horario.id_horario))
 
     def delete(self, id_horario: int) -> None:
         """

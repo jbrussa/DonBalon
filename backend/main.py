@@ -14,7 +14,6 @@ from controllers import (
     metodo_pago_controller,
     pago_controller,
     reserva_detalle_controller,
-    tipo_pago_controller,
     torneo_controller,
 )
 
@@ -49,7 +48,6 @@ app.include_router(equipo_controller.router)
 app.include_router(metodo_pago_controller.router)
 app.include_router(pago_controller.router)
 app.include_router(reserva_detalle_controller.router)
-app.include_router(tipo_pago_controller.router)
 app.include_router(torneo_controller.router)
 
 

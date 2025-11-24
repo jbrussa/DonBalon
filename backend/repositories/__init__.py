@@ -12,7 +12,6 @@ from .metodo_pago_repository import MetodoPagoRepository
 from .pago_repository import PagoRepository
 from .reserva_repository import ReservaRepository
 from .reserva_detalle_repository import ReservaDetalleRepository
-from .tipo_pago_repository import TipoPagoRepository
 from .torneo_repository import TorneoRepository
 from .equipo_repository import EquipoRepository
 
