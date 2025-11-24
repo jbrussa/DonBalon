@@ -16,6 +16,9 @@ from schemas.reserva_transaccion_schema import ReservaTransaccionSchema
 from data.database_connection import DatabaseConnection
 
 
+from classes.estado_reserva.reserva_pagada import ReservaPagada
+from classes.estado_turno.turno_no_disponible import TurnoNoDisponible
+
 ID_ESTADO_NO_DISPONIBLE = 2
 
 
@@ -39,10 +42,10 @@ class ReservaService:
             raise ValueError("El monto_total debe ser un Decimal.")
         if not obj.fecha_reserva:
             raise ValueError("La fecha de reserva es obligatoria.")
-        if not obj.estado_reserva:
-            raise ValueError("El estado de la reserva es obligatorio.")
-        if len(obj.estado_reserva) > 30:
-            raise ValueError("El estado de la reserva no puede exceder los 30 caracteres.")
+        # El estado ahora es un objeto, validamos que sea una instancia de EstadoReserva si es necesario, 
+        # pero el type hint ya ayuda. Podríamos validar si es None.
+        if obj.estado is None:
+             raise ValueError("El estado de la reserva es obligatorio.")
 
     def insert(self, obj: Reserva) -> Reserva:
         self.validate(obj)
@@ -114,7 +117,7 @@ class ReservaService:
                 id_cliente=data.id_cliente,
                 monto_total=total_reserva,
                 fecha_reserva=date.today(),
-                estado_reserva="Confirmada" # Asumimos confirmada si se paga/registra
+                estado=ReservaPagada() # Estado inicial: Pagada (Confirmada)
             )
             reserva_creada = self.repository.create(nueva_reserva)
 
@@ -128,7 +131,7 @@ class ReservaService:
                     id_cancha=item.id_cancha,
                     id_horario=item.id_horario,
                     fecha=item.fecha,
-                    id_estado=ID_ESTADO_NO_DISPONIBLE
+                    estado=TurnoNoDisponible() # Estado inicial: No Disponible
                 )
                 turno_creado = self.turno_repository.create(nuevo_turno)
 
@@ -145,8 +148,8 @@ class ReservaService:
                 id_reserva=reserva_creada.id_reserva,
                 id_metodo_pago=data.id_metodo_pago,
                 fecha_pago=date.today(),
-                monto=total_reserva,
-                estado_pago="Completado"
+                monto=total_reserva
+                # estado_pago eliminado
             )
             self.pago_repository.create(nuevo_pago)
 
