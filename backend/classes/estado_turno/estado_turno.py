@@ -15,5 +15,9 @@ class EstadoTurno(ABC):
 
     def __str__(self):
         """Devuelve la representación serializable del estado."""
-        # Esto nos da 'Disponible' o 'NoDisponible'
-        return self.__class__.__name__.replace("Turno", "")
+        # Convierte 'TurnoDisponible' -> 'Disponible' y 'TurnoNoDisponible' -> 'No Disponible'
+        name = self.__class__.__name__.replace("Turno", "")
+        # Agregar espacio antes de mayúsculas: 'NoDisponible' -> 'No Disponible'
+        import re
+        name = re.sub(r'(?<!^)(?=[A-Z])', ' ', name)
+        return name

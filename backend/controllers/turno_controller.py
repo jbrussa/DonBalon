@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List
+from typing import List, Optional
+from datetime import date
 from schemas.turno_schema import TurnoCreate, TurnoUpdate, TurnoResponse
 from services.turno_service import TurnoService
 from classes.turno import Turno
@@ -99,3 +100,34 @@ def delete_turno(id_turno: int, service: TurnoService = Depends(get_turno_servic
     
     service.delete(id_turno)
     return None
+
+
+@router.post("/crear-del-dia", status_code=status.HTTP_200_OK)
+def crear_turnos_del_dia(fecha: Optional[date] = None, service: TurnoService = Depends(get_turno_service)):
+    """
+    Crea todos los turnos para todas las canchas y horarios en una fecha específica.
+    Si no se especifica fecha, se usa la fecha actual.
+    """
+    try:
+        resultado = service.crear_turnos_del_dia(fecha)
+        return resultado
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear turnos: {str(e)}"
+        )
+
+
+@router.post("/expirar-pasados", status_code=status.HTTP_200_OK)
+def expirar_turnos_pasados(service: TurnoService = Depends(get_turno_service)):
+    """
+    Marca como 'no disponible' todos los turnos cuya fecha y hora ya pasaron.
+    """
+    try:
+        resultado = service.expirar_turnos_pasados()
+        return resultado
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al expirar turnos: {str(e)}"
+        )

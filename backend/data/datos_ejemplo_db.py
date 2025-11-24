@@ -47,7 +47,7 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('20:00', '21:00')")
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('21:00', '22:00')")
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('22:00', '23:00')")
-        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('23:00', '00:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('23:00', '23:59')")
         
         # Turno
         cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, estado_turno) VALUES (1, 1, '2025-11-20', 'DISPONIBLE')")

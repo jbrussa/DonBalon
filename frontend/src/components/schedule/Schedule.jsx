@@ -15,8 +15,37 @@ export default function Schedule() {
   const [servicios, setServicios] = useState([]);
   const [date, setDate] = useState(isoDate(new Date()));
   const [hoverSlot, setHoverSlot] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Inicializar turnos al cargar el componente
+  useEffect(() => {
+    async function inicializarTurnos() {
+      try {
+        // Primero expirar turnos pasados
+        await fetch(`${API_BASE}/turnos/expirar-pasados`, {
+          method: 'POST',
+        });
+
+        // Luego crear turnos del día actual si no existen
+        await fetch(`${API_BASE}/turnos/crear-del-dia`, {
+          method: 'POST',
+        });
+
+        console.log('Turnos inicializados correctamente');
+      } catch (error) {
+        console.error('Error al inicializar turnos:', error);
+      } finally {
+        setIsInitializing(false);
+      }
+    }
+
+    inicializarTurnos();
+  }, []);
 
   useEffect(() => {
+    // Esperar a que la inicialización termine antes de cargar datos
+    if (isInitializing) return;
+
     fetch(`${API_BASE}/canchas`)
       .then((r) => r.json())
       .then(setCanchas)
@@ -37,7 +66,7 @@ export default function Schedule() {
       .then((r) => r.json())
       .then(setServicios)
       .catch(() => setServicios([]));
-  }, []);
+  }, [isInitializing]);
 
   // Map horarios to sorted time slots (use hora_inicio)
   const timeSlots = useMemo(() => {
@@ -171,6 +200,16 @@ export default function Schedule() {
 
   const template = `220px repeat(${timeSlots.length}, 1fr)`;
 
+  if (isInitializing) {
+    return (
+      <div className="schedule-root">
+        <div className="schedule-loading">
+          <p>Inicializando turnos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="schedule-root">
       <div className="schedule-controls">
@@ -185,13 +224,10 @@ export default function Schedule() {
         </label>
         <div className="legend">
           <div className="legend-item">
-            <span className="legend-swatch available" /> Disponible
-          </div>
-          <div className="legend-item">
             <span className="legend-swatch occupied" /> No disponible
           </div>
           <div className="legend-item">
-            <span className="legend-swatch no-turno" /> Sin turno
+            <span className="legend-swatch no-turno" /> Disponible
           </div>
         </div>
       </div>
