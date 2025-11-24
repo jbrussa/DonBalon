@@ -36,4 +36,39 @@
   border-radius: 8px;
   text-decoration: none;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.nav-cta:hover {
+  background: linear-gradient(180deg, #7f5f3f, #6b4f35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.user-name {
+  color: #7f5f3f;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 12px;
+  background: rgba(193, 154, 107, 0.1);
+  border-radius: 6px;
+}
+
+@media (max-width: 640px) {
+  .user-name {
+    display: none;
+  }
+  
+  .nav {
+    gap: 8px;
+  }
+  
+  .nav-link {
+    font-size: 13px;
+    padding: 4px 6px;
+  }
 }

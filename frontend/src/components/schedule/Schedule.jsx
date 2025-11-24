@@ -16,6 +16,7 @@ export default function Schedule() {
   const [date, setDate] = useState(isoDate(new Date()));
   const [hoverSlot, setHoverSlot] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [selectedTurnos, setSelectedTurnos] = useState([]);
 
   // Inicializar turnos al cargar el componente
   useEffect(() => {
@@ -123,6 +124,47 @@ export default function Schedule() {
     return map;
   }, [canchaServicios, servicios]);
 
+  // Función para verificar si un turno está seleccionado
+  const isTurnoSelected = (turnoId) => {
+    return selectedTurnos.some(t => t.id_turno === turnoId);
+  };
+
+  // Función para alternar la selección de un turno
+  const toggleTurnoSelection = (turno, cancha, horario) => {
+    const turnoId = turno.id_turno;
+    
+    if (isTurnoSelected(turnoId)) {
+      // Deseleccionar
+      setSelectedTurnos(prev => prev.filter(t => t.id_turno !== turnoId));
+    } else {
+      // Seleccionar - guardar el turno con información adicional
+      setSelectedTurnos(prev => [
+        ...prev,
+        {
+          ...turno,
+          cancha_nombre: cancha.nombre,
+          horario_inicio: horario.label,
+        }
+      ]);
+    }
+  };
+
+  // Función para limpiar todas las selecciones
+  const clearSelection = () => {
+    setSelectedTurnos([]);
+  };
+
+  // Función para proceder con la reserva
+  const handleProcederReserva = () => {
+    if (selectedTurnos.length === 0) {
+      alert('Debe seleccionar al menos un turno');
+      return;
+    }
+    console.log('Turnos seleccionados:', selectedTurnos);
+    // TODO: Implementar navegación o modal para completar la reserva
+    alert(`Has seleccionado ${selectedTurnos.length} turno(s). Continuar con el proceso de reserva...`);
+  };
+
   function renderRow(cancha) {
     const cid = cancha.id_cancha ?? cancha.id;
     // build array of cells: left + one cell per timeSlot
@@ -146,6 +188,7 @@ export default function Schedule() {
       let slotClass = "slot";
       let isClickable = false;
       let tooltipText = "";
+      let isSelected = false;
 
       if (!turno) {
         // No existe turno para este slot - No disponible (no creado)
@@ -154,9 +197,13 @@ export default function Schedule() {
       } else {
         const estadoTurno = (turno.estado_turno || "").toLowerCase();
         if (estadoTurno === "disponible") {
+          isSelected = isTurnoSelected(turno.id_turno);
           slotClass += " available";
+          if (isSelected) {
+            slotClass += " selected";
+          }
           isClickable = true;
-          tooltipText = "Haz click para reservar";
+          tooltipText = isSelected ? "Click para deseleccionar" : "Click para seleccionar";
         } else {
           // "no disponible" o cualquier otro estado
           slotClass += " occupied";
@@ -168,17 +215,18 @@ export default function Schedule() {
         <div
           key={slot.id + key}
           className={slotClass}
-          onMouseEnter={() => setHoverSlot(isClickable ? key : null)}
+          onMouseEnter={() => setHoverSlot(isClickable && !isSelected ? key : null)}
           onMouseLeave={() => setHoverSlot(null)}
           onClick={() => {
-            if (isClickable)
-              alert(
-                `Seleccionaste cancha ${cancha.nombre} ${slot.label} del ${date}`
-              );
+            if (isClickable) {
+              toggleTurnoSelection(turno, cancha, slot);
+            }
           }}
           title={tooltipText}
         >
-          {hoverSlot === key && isClickable ? (
+          {isSelected ? (
+            <div className="slot-selected-indicator" />
+          ) : hoverSlot === key && isClickable ? (
             <div className="slot-hover" />
           ) : null}
         </div>
@@ -224,10 +272,13 @@ export default function Schedule() {
         </label>
         <div className="legend">
           <div className="legend-item">
+            <span className="legend-swatch selected" /> Seleccionado
+          </div>
+          <div className="legend-item">
             <span className="legend-swatch occupied" /> No disponible
           </div>
           <div className="legend-item">
-            <span className="legend-swatch no-turno" /> Disponible
+            <span className="legend-swatch available" /> Disponible
           </div>
         </div>
       </div>
@@ -247,6 +298,42 @@ export default function Schedule() {
 
         <div className="schedule-body">{canchas.map(renderRow)}</div>
       </div>
+
+      {/* Sección de turnos seleccionados y botón de reserva */}
+      {selectedTurnos.length > 0 && (
+        <div className="reservation-section">
+          <div className="selected-turnos-summary">
+            <h3>Turnos seleccionados ({selectedTurnos.length})</h3>
+            <div className="selected-turnos-list">
+              {selectedTurnos.map((turno) => (
+                <div key={turno.id_turno} className="selected-turno-item">
+                  <div className="turno-info">
+                    <span className="turno-cancha">{turno.cancha_nombre}</span>
+                    <span className="turno-horario">{turno.horario_inicio}</span>
+                    <span className="turno-fecha">{turno.fecha}</span>
+                  </div>
+                  <button
+                    className="remove-turno-btn"
+                    onClick={() => toggleTurnoSelection(turno, {nombre: turno.cancha_nombre}, {label: turno.horario_inicio})}
+                    title="Quitar turno"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="reservation-actions">
+            <button className="clear-selection-btn" onClick={clearSelection}>
+              Limpiar selección
+            </button>
+            <button className="proceed-reservation-btn" onClick={handleProcederReserva}>
+              Proceder con la reserva
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

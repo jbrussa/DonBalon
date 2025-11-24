@@ -97,3 +97,18 @@ class ClienteRepository(BaseRepository):
         """
         row = self.query_one(f"SELECT 1 FROM {self.TABLE} WHERE id_cliente = ?", (id_cliente,))
         return row is not None
+
+    def get_by_mail(self, mail: str) -> Optional[Cliente]:
+        """
+        Obtiene un Cliente por su correo electrónico
+
+        Args:
+            mail: Correo electrónico del cliente
+
+        Returns:
+            Objeto Cliente o None si no existe
+        """
+        row = self.query_one(f"SELECT * FROM {self.TABLE} WHERE mail = ?", (mail,))
+        if not row:
+            return None
+        return cliente_from_dict(dict(row))

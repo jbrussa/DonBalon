@@ -29,3 +29,21 @@ class ClienteResponse(ClienteBase):
 
     class Config:
         from_attributes = True
+
+
+class LoginRequest(BaseModel):
+    mail: str = Field(..., description="Email del cliente")
+    password: str = Field(..., description="Contraseña del cliente")
+
+
+class LoginResponse(BaseModel):
+    id_cliente: int
+    nombre: str
+    apellido: str
+    mail: str
+    telefono: Optional[str]
+    admin: bool
+    message: str = "Login exitoso"
+
+    class Config:
+        from_attributes = True

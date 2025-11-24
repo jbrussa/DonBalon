@@ -1,11 +1,17 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
+from pydantic import BaseModel
 from schemas.cliente_schema import ClienteCreate, ClienteUpdate, ClienteResponse
 from services.cliente_service import ClienteService
 from classes.cliente import Cliente
 from data.database_connection import DatabaseConnection
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
+
+
+class LoginRequest(BaseModel):
+    mail: str
+    password: str
 
 
 def get_cliente_service():
@@ -108,3 +114,37 @@ def delete_cliente(id_cliente: int, service: ClienteService = Depends(get_client
     
     service.delete(id_cliente)
     return None
+
+
+@router.post("/login", response_model=ClienteResponse)
+def login(login_data: LoginRequest, service: ClienteService = Depends(get_cliente_service)):
+    """
+    Endpoint de login - valida correo y contraseña
+    """
+    try:
+        # Buscar cliente por mail
+        cliente = service.repository.get_by_mail(login_data.mail)
+        
+        if not cliente:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Correo o contraseña incorrectos"
+            )
+        
+        # Verificar contraseña
+        if cliente.password != login_data.password:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Correo o contraseña incorrectos"
+            )
+        
+        # Login exitoso - devolver datos del cliente
+        return ClienteResponse(**cliente.to_dict())
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error en el servidor: {str(e)}"
+        )
