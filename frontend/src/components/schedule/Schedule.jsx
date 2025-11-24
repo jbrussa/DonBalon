@@ -52,7 +52,6 @@ export default function Schedule() {
     // Convert horario objects: expect {id_horario, hora_inicio, hora_fin}
     const parsed = horarios.map((h) => {
       let start = h.hora_inicio || h.horaInicio || h.hora_inicio || "";
-      // hora_inicio may come as '09:00:00' or '09:00'
       const hour = parseInt(start.split(":")[0], 10);
       return { id: h.id_horario ?? h.id, label: start.slice(0, 5), hour };
     });
@@ -60,8 +59,8 @@ export default function Schedule() {
     return parsed;
   }, [horarios]);
 
-  // build map of occupied slots for selected date
-  const occupied = useMemo(() => {
+  // build map of turnos for selected date (both available and unavailable)
+  const turnosMap = useMemo(() => {
     const map = {};
     turnos.forEach((t) => {
       if (!t.fecha) return;
@@ -112,22 +111,45 @@ export default function Schedule() {
     // time slot cells as direct children so grid columns align
     timeSlots.forEach((slot) => {
       const key = `${cid}__${slot.hour}`;
-      const isOccupied = !!occupied[key];
+      const turno = turnosMap[key];
+
+      // Determinar disponibilidad según el estado del turno
+      let slotClass = "slot";
+      let isClickable = false;
+      let tooltipText = "";
+
+      if (!turno) {
+        // No existe turno para este slot - No disponible (no creado)
+        slotClass += " no-turno";
+        tooltipText = "No hay turno creado para este horario";
+      } else {
+        const estadoTurno = (turno.estado_turno || "").toLowerCase();
+        if (estadoTurno === "disponible") {
+          slotClass += " available";
+          isClickable = true;
+          tooltipText = "Haz click para reservar";
+        } else {
+          // "no disponible" o cualquier otro estado
+          slotClass += " occupied";
+          tooltipText = "No disponible";
+        }
+      }
+
       cells.push(
         <div
           key={slot.id + key}
-          className={`slot ${isOccupied ? "occupied" : "available"}`}
-          onMouseEnter={() => setHoverSlot(isOccupied ? null : key)}
+          className={slotClass}
+          onMouseEnter={() => setHoverSlot(isClickable ? key : null)}
           onMouseLeave={() => setHoverSlot(null)}
           onClick={() => {
-            if (!isOccupied)
+            if (isClickable)
               alert(
                 `Seleccionaste cancha ${cancha.nombre} ${slot.label} del ${date}`
               );
           }}
-          title={isOccupied ? "No disponible" : "Haz click para reservar"}
+          title={tooltipText}
         >
-          {hoverSlot === key && !isOccupied ? (
+          {hoverSlot === key && isClickable ? (
             <div className="slot-hover" />
           ) : null}
         </div>
@@ -157,15 +179,19 @@ export default function Schedule() {
           <input
             type="date"
             value={date}
+            min={isoDate(new Date())}
             onChange={(e) => setDate(e.target.value)}
           />
         </label>
         <div className="legend">
           <div className="legend-item">
+            <span className="legend-swatch available" /> Disponible
+          </div>
+          <div className="legend-item">
             <span className="legend-swatch occupied" /> No disponible
           </div>
           <div className="legend-item">
-            <span className="legend-swatch hover" /> Hover (selección)
+            <span className="legend-swatch no-turno" /> Sin turno
           </div>
         </div>
       </div>

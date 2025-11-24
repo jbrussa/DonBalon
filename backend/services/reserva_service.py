@@ -27,7 +27,6 @@ ID_ESTADO_NO_DISPONIBLE = 2
 class ReservaService:
     def __init__(self, db_path: Optional[str] = None, connection: Optional[sqlite3.Connection] = None):
         self.db_conn = DatabaseConnection()
-        # Si nos pasan una conexión, la usamos (para tests), sino usamos la singleton
         self.connection = connection if connection else self.db_conn.get_connection()
         
         self.repository = ReservaRepository(connection=self.connection)
@@ -45,8 +44,6 @@ class ReservaService:
             raise ValueError("El monto_total debe ser un Decimal.")
         if not obj.fecha_reserva:
             raise ValueError("La fecha de reserva es obligatoria.")
-        # El estado ahora es un objeto, validamos que sea una instancia de EstadoReserva si es necesario, 
-        # pero el type hint ya ayuda. Podríamos validar si es None.
         if obj.estado is None:
              raise ValueError("El estado de la reserva es obligatorio.")
 

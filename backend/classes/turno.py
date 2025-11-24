@@ -11,6 +11,7 @@ from .estado_turno.turno_no_disponible import TurnoNoDisponible
 ESTADOS_TURNO_MAP = {
     "disponible": TurnoDisponible,
     "no disponible": TurnoNoDisponible,
+    "nodisponible": TurnoNoDisponible, 
 }
 
 @dataclass

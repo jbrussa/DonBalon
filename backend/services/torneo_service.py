@@ -17,7 +17,6 @@ class TorneoService:
             raise ValueError("La fecha de inicio es obligatoria.")
         if not obj.fecha_fin:
             raise ValueError("La fecha de fin es obligatoria.")
-        # Podríamos validar fecha_inicio <= fecha_fin
 
     def insert(self, obj: Torneo) -> Torneo:
         self.validate(obj)

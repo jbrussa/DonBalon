@@ -39,10 +39,15 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (3, 1)")
         
         # Horario
-        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('09:00', '10:00')")
-        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('10:00', '11:00')")
-        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('14:00', '15:00')")
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('15:00', '16:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('16:00', '17:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('17:00', '18:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('18:00', '19:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('19:00', '20:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('20:00', '21:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('21:00', '22:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('22:00', '23:00')")
+        cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('23:00', '00:00')")
         
         # Turno
         cursor.execute("INSERT INTO Turno (id_cancha, id_horario, fecha, estado_turno) VALUES (1, 1, '2025-11-20', 'DISPONIBLE')")
