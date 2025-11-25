@@ -107,7 +107,7 @@ export default function Tournament({ onClose }) {
             alert('Debe ingresar el nombre del equipo');
             return;
         }
-        
+
         // Validar que no exista un equipo con el mismo nombre
         const nombreExistente = equipos.find(
             eq => eq.nombre.toLowerCase().trim() === nuevoEquipoNombre.toLowerCase().trim()
@@ -247,7 +247,7 @@ export default function Tournament({ onClose }) {
                 setLoading(false);
                 return;
             }
-            
+
             // Guardar el monto total estimado
             setMontoTotal(parseFloat(validacion.monto_estimado || 0));
 
@@ -663,7 +663,7 @@ export default function Tournament({ onClose }) {
                                 </div>
                             )}
                         </div>
-                        
+
                         {/* Monto Total */}
                         <div className="payment-total-section">
                             <div className="total-amount">

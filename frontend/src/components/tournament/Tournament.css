@@ -455,6 +455,7 @@
         grid-template-columns: 1fr;
     }
 }
+
 /* Tipos de Cancha */
 .tipos-cancha-list {
     display: flex;
