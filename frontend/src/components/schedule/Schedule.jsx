@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import Login from "../auth/Login";
+import Payment from "../payment/Payment";
 import "./Schedule.css";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -20,6 +21,7 @@ export default function Schedule() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [selectedTurnos, setSelectedTurnos] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const { isAuthenticated } = useAuth();
 
@@ -173,10 +175,8 @@ export default function Schedule() {
       return;
     }
 
-    // Si hay sesión, continuar con el proceso de reserva
-    console.log('Turnos seleccionados:', selectedTurnos);
-    // TODO: Implementar el siguiente paso del proceso de reserva
-    alert(`Has seleccionado ${selectedTurnos.length} turno(s). Continuar con el proceso de reserva...`);
+    // Si hay sesión, abrir modal de pago
+    setShowPaymentModal(true);
   };
 
   // Callback cuando se cierra el modal de login
@@ -184,12 +184,23 @@ export default function Schedule() {
     setShowLoginModal(false);
     setLoginMessage("");
 
-    // Si después de cerrar el login el usuario se autenticó, proceder automáticamente
+    // Si después de cerrar el login el usuario se autenticó, abrir modal de pago
     if (isAuthenticated() && selectedTurnos.length > 0) {
-      console.log('Usuario autenticado, procediendo con la reserva...');
-      // TODO: Aquí se podría llamar automáticamente al siguiente paso
-      alert(`Sesión iniciada. Procediendo con la reserva de ${selectedTurnos.length} turno(s)...`);
+      setShowPaymentModal(true);
     }
+  };
+
+  // Callback cuando se cierra el modal de pago
+  const handleClosePayment = () => {
+    setShowPaymentModal(false);
+    // Limpiar selecciones y recargar datos
+    setSelectedTurnos([]);
+
+    // Recargar turnos para actualizar disponibilidad
+    fetch(`${API_BASE}/turnos`)
+      .then((r) => r.json())
+      .then(setTurnos)
+      .catch(() => setTurnos([]));
   };
 
   function renderRow(cancha) {
@@ -364,6 +375,14 @@ export default function Schedule() {
 
       {/* Modal de login si no está autenticado */}
       {showLoginModal && <Login onClose={handleCloseLogin} message={loginMessage} />}
+
+      {/* Modal de pago */}
+      {showPaymentModal && (
+        <Payment
+          selectedTurnos={selectedTurnos}
+          onClose={handleClosePayment}
+        />
+      )}
     </div>
   );
 }

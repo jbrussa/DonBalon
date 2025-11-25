@@ -9,6 +9,9 @@ from repositories.reserva_repository import ReservaRepository
 from repositories.cancha_repository import CanchaRepository
 from repositories.cliente_repository import ClienteRepository
 from repositories.base_repository import BaseRepository
+from repositories.pago_repository import PagoRepository
+from repositories.horario_repository import HorarioRepository
+from repositories.metodo_pago_repository import MetodoPagoRepository
 from reportlab.platypus import Paragraph, Spacer, SimpleDocTemplate, Table, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
@@ -24,6 +27,9 @@ class ReporteService:
         self.reserva_repo = ReservaRepository(db_path, connection)
         self.cancha_repo = CanchaRepository(db_path, connection)
         self.cliente_repo = ClienteRepository(db_path, connection)
+        self.pago_repo = PagoRepository(db_path, connection)
+        self.horario_repo = HorarioRepository(db_path, connection)
+        self.metodo_pago_repo = MetodoPagoRepository(db_path, connection)
         self.base_repo = BaseRepository(db_path, connection)
     
     @staticmethod
@@ -256,3 +262,61 @@ class ReporteService:
         elements.append(Spacer(1, 12))
 
         self._build_pdf(output_path, f"Reservas por Cancha {nombre_cancha}", elements)
+
+    def obtener_confirmacion_reserva(self, id_reserva: int) -> dict:
+        """Obtiene un resumen completo de la confirmación de una reserva.
+        
+        Args:
+            id_reserva: ID de la reserva a confirmar
+            
+        Returns:
+            dict con toda la información de la reserva para mostrar al usuario
+        """
+        # Obtener reserva
+        reserva = self.reserva_repo.get_by_id(id_reserva)
+        if not reserva:
+            raise ValueError(f"Reserva con ID {id_reserva} no encontrada")
+        
+        # Obtener cliente
+        cliente = self.cliente_repo.get_by_id(reserva.id_cliente)
+        
+        # Obtener pago
+        pagos = self.pago_repo.get_all()
+        pago = next((p for p in pagos if p.id_reserva == id_reserva), None)
+        metodo_pago = None
+        if pago:
+            metodo_pago = self.metodo_pago_repo.get_by_id(pago.id_metodo_pago)
+        
+        # Obtener detalles de la reserva
+        detalles = self.detalle_repo.get_by_reserva(id_reserva)
+        items_detalle = []
+        
+        for detalle in detalles:
+            turno = self.turno_repo.get_by_id(detalle.id_turno)
+            if turno:
+                cancha = self.cancha_repo.get_by_id(turno.id_cancha)
+                horario = self.horario_repo.get_by_id(turno.id_horario)
+                
+                items_detalle.append({
+                    "id_detalle": detalle.id_detalle,
+                    "cancha_nombre": cancha.nombre if cancha else "N/A",
+                    "fecha": str(turno.fecha),
+                    "horario": f"{horario.hora_inicio} - {horario.hora_fin}" if horario else "N/A",
+                    "precio": str(detalle.precio_total_item)
+                })
+        
+        # Construir respuesta
+        return {
+            "id_reserva": reserva.id_reserva,
+            "fecha_reserva": str(reserva.fecha_reserva),
+            "estado": reserva.estado_nombre,
+            "monto_total": str(reserva.monto_total),
+            "cliente": {
+                "nombre": f"{cliente.nombre} {cliente.apellido}" if cliente else "N/A",
+                "mail": cliente.mail if cliente else "N/A",
+                "telefono": cliente.telefono if cliente else "N/A"
+            },
+            "metodo_pago": metodo_pago.descripcion if metodo_pago else "N/A",
+            "fecha_pago": str(pago.fecha_pago) if pago else str(reserva.fecha_reserva),
+            "items": items_detalle
+        }

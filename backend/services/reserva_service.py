@@ -12,6 +12,8 @@ from repositories.turno_repository import TurnoRepository
 from repositories.pago_repository import PagoRepository
 from repositories.cancha_repository import CanchaRepository
 from repositories.tipo_cancha_repository import TipoCanchaRepository
+from repositories.cancha_servicio_repository import CanchaServicioRepository
+from repositories.servicio_repository import ServicioRepository
 from schemas.reserva_transaccion_schema import ReservaTransaccionSchema
 from data.database_connection import DatabaseConnection
 
@@ -35,6 +37,8 @@ class ReservaService:
         self.pago_repository = PagoRepository(connection=self.connection)
         self.cancha_repository = CanchaRepository(connection=self.connection)
         self.tipo_cancha_repository = TipoCanchaRepository(connection=self.connection)
+        self.cancha_servicio_repository = CanchaServicioRepository(connection=self.connection)
+        self.servicio_repository = ServicioRepository(connection=self.connection)
         self.metodo_pago_repository = MetodoPagoRepository(connection=self.connection)
 
     def validate(self, obj: Reserva) -> None:
@@ -93,8 +97,12 @@ class ReservaService:
             existing_turno = self.turno_repository.get_by_cancha_horario_fecha(
                 item.id_cancha, item.id_horario, item.fecha
             )
+            
+            # Si existe, verificar que esté disponible
             if existing_turno:
-                raise ValueError(f"El turno para la cancha {item.id_cancha} en el horario {item.id_horario} el día {item.fecha} ya está ocupado.")
+                estado_turno = existing_turno.estado_nombre.lower()
+                if estado_turno != "disponible":
+                    raise ValueError(f"El turno para la cancha {item.id_cancha} en el horario {item.id_horario} el día {item.fecha} ya está ocupado.")
 
             # 2. Obtener precio de la cancha
             cancha = self.cancha_repository.get_by_id(item.id_cancha)
@@ -105,12 +113,22 @@ class ReservaService:
             if not tipo_cancha:
                 raise ValueError(f"El tipo de cancha {cancha.id_tipo} no existe.")
             
+            # Precio base por hora
             precio_item = tipo_cancha.precio_hora
+            
+            # 3. Agregar costo de servicios de la cancha
+            ids_servicios = self.cancha_servicio_repository.get_servicios_by_cancha(item.id_cancha)
+            for id_servicio in ids_servicios:
+                servicio = self.servicio_repository.get_by_id(id_servicio)
+                if servicio:
+                    precio_item += servicio.costo_servicio
+            
             total_reserva += precio_item
             
             items_procesados.append({
                 "item_data": item,
-                "precio": precio_item
+                "precio": precio_item,
+                "turno_existente": existing_turno
             })
 
         # --- PASADA 2: Persistencia (Escritura Transaccional) ---
@@ -137,15 +155,23 @@ class ReservaService:
             for procesado in items_procesados:
                 item = procesado["item_data"]
                 precio = procesado["precio"]
+                turno_existente = procesado["turno_existente"]
 
-                # Crear Turno
-                nuevo_turno = Turno(
-                    id_cancha=item.id_cancha,
-                    id_horario=item.id_horario,
-                    fecha=item.fecha,
-                    estado=TurnoNoDisponible() # Estado inicial: No Disponible
-                )
-                turno_creado = self.turno_repository.create(nuevo_turno)
+                # Si el turno ya existe, actualizarlo; si no, crearlo
+                if turno_existente:
+                    # Actualizar estado del turno existente a No Disponible
+                    turno_existente.cambiar_estado(TurnoNoDisponible())
+                    self.turno_repository.update(turno_existente)
+                    turno_creado = turno_existente
+                else:
+                    # Crear nuevo turno
+                    nuevo_turno = Turno(
+                        id_cancha=item.id_cancha,
+                        id_horario=item.id_horario,
+                        fecha=item.fecha,
+                        estado=TurnoNoDisponible()
+                    )
+                    turno_creado = self.turno_repository.create(nuevo_turno)
 
                 # Crear Detalle
                 nuevo_detalle = ReservaDetalle(

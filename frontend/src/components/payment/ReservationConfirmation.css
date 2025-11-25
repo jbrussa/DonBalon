@@ -1,0 +1,389 @@
+.confirmation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.confirmation-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: slideIn 0.3s ease;
+    margin: auto;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.confirmation-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.confirmation-close:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+/* Loading */
+.confirmation-loading {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #C19A6B;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.confirmation-loading p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+/* Error */
+.confirmation-error {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.confirmation-error h2 {
+    color: #c0392b;
+    margin-bottom: 16px;
+}
+
+.confirmation-error p {
+    color: #7f8c8d;
+    margin-bottom: 24px;
+}
+
+/* Success */
+.confirmation-success {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #27ae60, #229954);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.confirmation-success h2 {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.success-subtitle {
+    color: #7f8c8d;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Details */
+.confirmation-details {
+    margin-bottom: 24px;
+}
+
+.detail-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.detail-section h3 {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #C19A6B;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #7f8c8d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #2c3e50;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.detail-status {
+    background: #27ae60;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    text-transform: capitalize;
+}
+
+.detail-total {
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 2px solid #C19A6B !important;
+}
+
+.detail-total .detail-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.detail-total .detail-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #27ae60;
+}
+
+/* Turnos */
+.turnos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.turno-card {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.turno-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #C19A6B;
+}
+
+.turno-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.turno-cancha {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.turno-precio {
+    background: #C19A6B;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.turno-info {
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+    color: #666;
+}
+
+.turno-fecha,
+.turno-horario {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Actions */
+.confirmation-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.confirmation-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-print {
+    background: linear-gradient(135deg, #C19A6B, #A67C52);
+    color: white;
+}
+
+.btn-print:hover {
+    background: linear-gradient(135deg, #A67C52, #8B6F47);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(193, 154, 107, 0.3);
+}
+
+.btn-close {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.btn-close:hover {
+    background: #bdc3c7;
+}
+
+/* Footer */
+.confirmation-footer {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #C19A6B;
+}
+
+.confirmation-footer p {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .confirmation-overlay {
+        position: static;
+        background: white;
+        padding: 0;
+    }
+
+    .confirmation-modal {
+        box-shadow: none;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .detail-section {
+        page-break-inside: avoid;
+    }
+}
+
+@media (max-width: 640px) {
+    .confirmation-modal {
+        padding: 24px;
+    }
+
+    .confirmation-success h2 {
+        font-size: 24px;
+    }
+
+    .success-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 36px;
+    }
+
+    .confirmation-actions {
+        flex-direction: column;
+    }
+
+    .turno-info {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

@@ -155,3 +155,31 @@ def generar_reporte_utilizacion_mensual(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al generar el reporte: {str(e)}"
         )
+
+
+@router.get("/confirmacion/{id_reserva}")
+def obtener_confirmacion_reserva(
+    id_reserva: int,
+    service: ReporteService = Depends(get_reporte_service)
+):
+    """
+    Obtiene un resumen completo de la confirmación de una reserva.
+    
+    - **id_reserva**: ID de la reserva
+    
+    Returns:
+        JSON con toda la información de la reserva incluyendo cliente, items, pagos, etc.
+    """
+    try:
+        confirmacion = service.obtener_confirmacion_reserva(id_reserva)
+        return confirmacion
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener confirmación: {str(e)}"
+        )
