@@ -22,8 +22,8 @@ class CanchaRepository(BaseRepository):
         Returns:
             El objeto Cancha con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (id_tipo, nombre) VALUES (?, ?)"
-        cur = self.execute(sql, (cancha.id_tipo, cancha.nombre))
+        sql = f"INSERT INTO {self.TABLE} (id_tipo, nombre, activo) VALUES (?, ?, ?)"
+        cur = self.execute(sql, (cancha.id_tipo, cancha.nombre, 1 if cancha.activo else 0))
         cancha.id_cancha = cur.lastrowid
         return cancha
 
@@ -44,12 +44,12 @@ class CanchaRepository(BaseRepository):
 
     def get_all(self) -> List[Cancha]:
         """
-        Obtiene todas las Canchas
+        Obtiene todas las Canchas activas
 
         Returns:
             Lista de objetos Cancha
         """
-        rows = self.query_all(f"SELECT * FROM {self.TABLE}")
+        rows = self.query_all(f"SELECT * FROM {self.TABLE} WHERE activo = 1")
         return [cancha_from_dict(dict(row)) for row in rows]
 
     def get_by_tipo(self, id_tipo: int) -> List[Cancha]:
@@ -72,17 +72,17 @@ class CanchaRepository(BaseRepository):
         Args:
             cancha: Objeto Cancha con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET id_tipo = ?, nombre = ? WHERE id_cancha = ?"
-        self.execute(sql, (cancha.id_tipo, cancha.nombre, cancha.id_cancha))
+        sql = f"UPDATE {self.TABLE} SET id_tipo = ?, nombre = ?, activo = ? WHERE id_cancha = ?"
+        self.execute(sql, (cancha.id_tipo, cancha.nombre, 1 if cancha.activo else 0, cancha.id_cancha))
 
     def delete(self, id_cancha: int) -> None:
         """
-        Elimina una Cancha
+        Elimina lógicamente una Cancha (marcándola como inactiva)
 
         Args:
             id_cancha: Id de la Cancha a eliminar
         """
-        sql = f"DELETE FROM {self.TABLE} WHERE id_cancha = ?"
+        sql = f"UPDATE {self.TABLE} SET activo = 0 WHERE id_cancha = ?"
         self.execute(sql, (id_cancha,))
 
     def exists(self, id_cancha: int) -> bool:

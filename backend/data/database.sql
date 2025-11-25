@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS Cancha (
     id_cancha INTEGER PRIMARY KEY AUTOINCREMENT,
     id_tipo INTEGER NOT NULL,
     nombre VARCHAR(100) NOT NULL,
+    activo INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (id_tipo) REFERENCES TipoCancha(id_tipo)
 );
 
@@ -43,7 +44,8 @@ CREATE TABLE IF NOT EXISTS CanchaServicio (
 CREATE TABLE IF NOT EXISTS Horario (
     id_horario INTEGER PRIMARY KEY AUTOINCREMENT,
     hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL
+    hora_fin TIME NOT NULL,
+    activo INTEGER NOT NULL DEFAULT 1
 );
 
 -- Tabla: Turno

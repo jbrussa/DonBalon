@@ -12,7 +12,8 @@ from repositories.base_repository import BaseRepository
 from repositories.pago_repository import PagoRepository
 from repositories.horario_repository import HorarioRepository
 from repositories.metodo_pago_repository import MetodoPagoRepository
-from reportlab.platypus import Paragraph, Spacer, SimpleDocTemplate, Table, Image
+from reportlab.platypus import Paragraph, Spacer, SimpleDocTemplate, Table
+from reportlab.platypus import Image as RLImage
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -73,7 +74,7 @@ class ReporteService:
     @staticmethod
     def _make_image_element(image_path, width=None, height=None):
         """Crea un elemento Image para reportlab"""
-        img = Image(image_path)
+        img = RLImage(image_path)
         if width:
             img.drawWidth = width
         if height:

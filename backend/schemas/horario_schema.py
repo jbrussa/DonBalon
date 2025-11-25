@@ -19,6 +19,7 @@ class HorarioUpdate(BaseModel):
 
 class HorarioResponse(HorarioBase):
     id_horario: int
+    activo: bool = True
 
     class Config:
         from_attributes = True

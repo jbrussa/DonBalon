@@ -22,12 +22,12 @@ class HorarioRepository(BaseRepository):
         Returns:
             El objeto Horario con el id asignado
         """
-        sql = f"INSERT INTO {self.TABLE} (hora_inicio, hora_fin) VALUES (?, ?)"
+        sql = f"INSERT INTO {self.TABLE} (hora_inicio, hora_fin, activo) VALUES (?, ?, ?)"
         # Convertir time a str para SQLite
         inicio_str = horario.hora_inicio.isoformat() if horario.hora_inicio else None
         fin_str = horario.hora_fin.isoformat() if horario.hora_fin else None
         
-        cur = self.execute(sql, (inicio_str, fin_str))
+        cur = self.execute(sql, (inicio_str, fin_str, 1 if horario.activo else 0))
         horario.id_horario = cur.lastrowid
         return horario
 
@@ -48,12 +48,12 @@ class HorarioRepository(BaseRepository):
 
     def get_all(self) -> List[Horario]:
         """
-        Obtiene todos los Horarios
+        Obtiene todos los Horarios activos
 
         Returns:
             Lista de objetos Horario
         """
-        rows = self.query_all(f"SELECT * FROM {self.TABLE}")
+        rows = self.query_all(f"SELECT * FROM {self.TABLE} WHERE activo = 1")
         return [horario_from_dict(dict(row)) for row in rows]
 
     def update(self, horario: Horario) -> None:
@@ -63,21 +63,21 @@ class HorarioRepository(BaseRepository):
         Args:
             horario: Objeto Horario con los datos a actualizar
         """
-        sql = f"UPDATE {self.TABLE} SET hora_inicio = ?, hora_fin = ? WHERE id_horario = ?"
+        sql = f"UPDATE {self.TABLE} SET hora_inicio = ?, hora_fin = ?, activo = ? WHERE id_horario = ?"
         # Convertir time a str para SQLite
         inicio_str = horario.hora_inicio.isoformat() if horario.hora_inicio else None
         fin_str = horario.hora_fin.isoformat() if horario.hora_fin else None
         
-        self.execute(sql, (inicio_str, fin_str, horario.id_horario))
+        self.execute(sql, (inicio_str, fin_str, 1 if horario.activo else 0, horario.id_horario))
 
     def delete(self, id_horario: int) -> None:
         """
-        Elimina un Horario
+        Elimina lógicamente un Horario (marcándolo como inactivo)
 
         Args:
             id_horario: Id del Horario a eliminar
         """
-        sql = f"DELETE FROM {self.TABLE} WHERE id_horario = ?"
+        sql = f"UPDATE {self.TABLE} SET activo = 0 WHERE id_horario = ?"
         self.execute(sql, (id_horario,))
 
     def exists(self, id_horario: int) -> bool:

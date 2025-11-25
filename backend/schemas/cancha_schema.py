@@ -18,6 +18,7 @@ class CanchaUpdate(BaseModel):
 
 class CanchaResponse(CanchaBase):
     id_cancha: int
+    activo: bool = True
     tipo_descripcion: Optional[str] = None
 
     class Config:

@@ -6,6 +6,8 @@ import Tournament from '../tournament/Tournament';
 import Reports from '../reports/Reports';
 import UserManager from '../admin/UserManager';
 import ReservationManager from '../admin/ReservationManager';
+import FieldManager from '../admin/FieldManager';
+import ScheduleManager from '../admin/ScheduleManager';
 import './Header.css';
 
 const Header = () => {
@@ -15,6 +17,8 @@ const Header = () => {
   const [showReports, setShowReports] = useState(false);
   const [showUserManager, setShowUserManager] = useState(false);
   const [showReservationManager, setShowReservationManager] = useState(false);
+  const [showFieldManager, setShowFieldManager] = useState(false);
+  const [showScheduleManager, setShowScheduleManager] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
 
@@ -72,6 +76,28 @@ const Header = () => {
     }
   };
 
+  const handleFieldManagerClick = () => {
+    if (!isAuthenticated()) {
+      setLoginMessage('Debes iniciar sesión para gestionar canchas');
+      setShowLogin(true);
+    } else if (!isAdmin()) {
+      alert('No tienes permisos para gestionar canchas. Esta función es solo para administradores.');
+    } else {
+      setShowFieldManager(true);
+    }
+  };
+
+  const handleScheduleManagerClick = () => {
+    if (!isAuthenticated()) {
+      setLoginMessage('Debes iniciar sesión para gestionar horarios');
+      setShowLogin(true);
+    } else if (!isAdmin()) {
+      alert('No tienes permisos para gestionar horarios. Esta función es solo para administradores.');
+    } else {
+      setShowScheduleManager(true);
+    }
+  };
+
   const handleSwitchToLogin = () => {
     setShowRegister(false);
     setShowLogin(true);
@@ -114,6 +140,22 @@ const Header = () => {
         alert('No tienes permisos para gestionar reservas. Esta función es solo para administradores.');
       }
     }
+    // Si se autenticó y venía del botón de gestión de canchas
+    if (isAuthenticated() && loginMessage.includes('gestionar canchas')) {
+      if (isAdmin()) {
+        setShowFieldManager(true);
+      } else {
+        alert('No tienes permisos para gestionar canchas. Esta función es solo para administradores.');
+      }
+    }
+    // Si se autenticó y venía del botón de gestión de horarios
+    if (isAuthenticated() && loginMessage.includes('gestionar horarios')) {
+      if (isAdmin()) {
+        setShowScheduleManager(true);
+      } else {
+        alert('No tienes permisos para gestionar horarios. Esta función es solo para administradores.');
+      }
+    }
   };
 
   return (
@@ -128,6 +170,12 @@ const Header = () => {
             <>
               <button className="nav-link nav-link-button" onClick={handleReservationManagerClick}>
                 Reservas
+              </button>
+              <button className="nav-link nav-link-button" onClick={handleFieldManagerClick}>
+                Canchas
+              </button>
+              <button className="nav-link nav-link-button" onClick={handleScheduleManagerClick}>
+                Horarios
               </button>
               <button className="nav-link nav-link-button" onClick={handleReportsClick}>
                 Reportes
@@ -184,6 +232,16 @@ const Header = () => {
       {showReservationManager && (
         <ReservationManager
           onClose={() => setShowReservationManager(false)}
+        />
+      )}
+      {showFieldManager && (
+        <FieldManager
+          onClose={() => setShowFieldManager(false)}
+        />
+      )}
+      {showScheduleManager && (
+        <ScheduleManager
+          onClose={() => setShowScheduleManager(false)}
         />
       )}
     </>
