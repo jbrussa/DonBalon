@@ -17,20 +17,20 @@ def get_cancha_service():
 @router.get("/", response_model=List[CanchaResponse])
 def list_canchas(service: CanchaService = Depends(get_cancha_service)):
     """Listar todas las canchas"""
-    canchas = service.list_all()
-    return [CanchaResponse(**cancha.to_dict()) for cancha in canchas]
+    canchas = service.list_all_with_tipo()
+    return canchas
 
 
 @router.get("/{id_cancha}", response_model=CanchaResponse)
 def get_cancha(id_cancha: int, service: CanchaService = Depends(get_cancha_service)):
     """Obtener una cancha por ID"""
-    cancha = service.get_by_id(id_cancha)
+    cancha = service.get_by_id_with_tipo(id_cancha)
     if not cancha:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Cancha con ID {id_cancha} no encontrada"
         )
-    return CanchaResponse(**cancha.to_dict())
+    return cancha
 
 
 @router.post("/", response_model=CanchaResponse, status_code=status.HTTP_201_CREATED)
