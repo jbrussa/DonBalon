@@ -289,12 +289,20 @@
 
 /* Print styles */
 @media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
     .no-print {
         display: none !important;
     }
 
     .tournament-confirmation {
-        padding: 20px;
+        padding: 15px;
+        width: 100%;
+        max-width: 100%;
     }
 
     .confirmation-content {
@@ -304,6 +312,100 @@
 
     .info-section {
         break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 15px;
+        padding: 15px;
+    }
+
+    .date-group {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 15px;
+    }
+
+    .turnos-list {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .turno-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .teams-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .team-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        padding: 12px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .stat-box {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        padding: 15px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+    }
+
+    .confirmation-total {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-top: 15px;
+        padding: 15px 20px;
+    }
+
+    .confirmation-message {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+
+    /* Reducir tamaños de fuente para impresión */
+    .confirmation-header h2 {
+        font-size: 20px;
+    }
+
+    .info-section h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .date-header {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .turno-cancha,
+    .turno-hora {
+        font-size: 13px;
+    }
+
+    .turno-price {
+        font-size: 14px;
+    }
+
+    .total-label {
+        font-size: 16px;
+    }
+
+    .total-value {
+        font-size: 22px;
     }
 }
 
