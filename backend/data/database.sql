@@ -89,10 +89,12 @@ CREATE TABLE IF NOT EXISTS Pago (
 CREATE TABLE IF NOT EXISTS Reserva (
     id_reserva INTEGER PRIMARY KEY AUTOINCREMENT,
     id_cliente INTEGER NOT NULL,
+    id_torneo INTEGER,
     monto_total DECIMAL(10, 2) NOT NULL,
     fecha_reserva DATE NOT NULL,
     estado_reserva VARCHAR(30) NOT NULL,
-    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente)
+    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente),
+    FOREIGN KEY (id_torneo) REFERENCES Torneo(id_torneo)
 );
 
 -- Tabla: ReservaDetalle (relación de muchos a muchos entre Reserva y Turno)

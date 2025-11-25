@@ -104,7 +104,7 @@
 }
 
 .schedule-grid {
-  border: 1px solid #e6e9ee;
+  border: 2px solid #d1d5db;
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
@@ -113,7 +113,7 @@
 .schedule-header {
   display: grid;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  border-bottom: 2px solid #d1d5db;
   padding: 8px 0;
 }
 
@@ -139,12 +139,12 @@
 .schedule-row {
   display: grid;
   align-items: stretch;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom: 1px solid #d1d5db;
 }
 
 .schedule-left {
   padding: 10px 12px;
-  border-right: 1px solid #f2f4f7;
+  border-right: 1px solid #d1d5db;
   background: #fafafa;
   display: flex;
   flex-direction: column;
@@ -162,7 +162,7 @@
 }
 
 .slot {
-  height: 64px;
+  height: 48px;
   border-radius: 6px;
   position: relative;
   overflow: hidden;
@@ -360,7 +360,7 @@
   .slot,
   .slot.header-slot {
     min-width: 40px;
-    height: 54px;
+    height: 44px;
     /* slightly reduced on smaller screens */
   }
 }
@@ -375,7 +375,7 @@
   .slot,
   .slot.header-slot {
     min-width: 60px;
-    height: 54px;
+    height: 44px;
   }
 
   .reservation-section {

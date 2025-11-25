@@ -30,6 +30,20 @@
   text-decoration: underline;
 }
 
+.nav-link-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.nav-link-button:hover {
+  color: #7f5f3f;
+  transform: translateY(-1px);
+}
+
 .nav-cta {
   background: linear-gradient(180deg, #947454, #7f5f3f);
   color: #fff;

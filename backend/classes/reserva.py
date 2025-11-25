@@ -19,6 +19,7 @@ ESTADOS_MAP = {
 class Reserva:
     id_reserva: Optional[int] = None
     id_cliente: Optional[int] = None
+    id_torneo: Optional[int] = None
     monto_total: Decimal = Decimal("0.00")
     fecha_reserva: Optional[datetime.date] = None
     estado: EstadoReserva = field(default_factory=ReservaPendiente)
@@ -43,6 +44,7 @@ class Reserva:
         return {
             "id_reserva": self.id_reserva,
             "id_cliente": self.id_cliente,
+            "id_torneo": self.id_torneo,
             "monto_total": str(self.monto_total),
             "fecha_reserva": self.fecha_reserva.isoformat() if self.fecha_reserva else None,
             # solo serializamos el nombre (string)
@@ -61,6 +63,7 @@ def from_dict(data: Dict[str, Any]) -> "Reserva":
     return Reserva(
         id_reserva=data.get("id_reserva"),
         id_cliente=data.get("id_cliente"),
+        id_torneo=data.get("id_torneo"),
         monto_total=Decimal(str(data.get("monto_total", "0.00"))),
         fecha_reserva=fecha,
         estado=estado_class(),  # instancia el objeto real del State

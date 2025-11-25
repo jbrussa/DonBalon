@@ -1,0 +1,338 @@
+/* Tournament Confirmation */
+.tournament-confirmation {
+    padding: 32px;
+}
+
+.confirmation-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.success-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #27ae60, #229954);
+    color: white;
+    font-size: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.confirmation-header h2 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.confirmation-header p {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 15px;
+}
+
+.confirmation-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: 24px;
+}
+
+/* Secciones de información */
+.info-section {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.info-section h3 {
+    margin: 0 0 16px 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #C19A6B;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.info-value {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Equipos */
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.team-card {
+    background: white;
+    padding: 16px;
+    border-radius: 6px;
+    border: 2px solid #e6e9ee;
+    transition: all 0.2s ease;
+}
+
+.team-card:hover {
+    border-color: #C19A6B;
+    box-shadow: 0 2px 8px rgba(193, 154, 107, 0.1);
+}
+
+.team-card .team-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+
+.team-card .team-players {
+    color: #7f8c8d;
+    font-size: 13px;
+}
+
+/* Estadísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.stat-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #e6e9ee;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #C19A6B;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Turnos por fecha */
+.date-group {
+    margin-bottom: 20px;
+}
+
+.date-group:last-child {
+    margin-bottom: 0;
+}
+
+.date-header {
+    background: linear-gradient(135deg, #C19A6B, #A67C52);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 14px;
+    text-transform: capitalize;
+}
+
+.turnos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.turno-item {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid #e6e9ee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.turno-item:hover {
+    border-color: #C19A6B;
+    box-shadow: 0 2px 4px rgba(193, 154, 107, 0.1);
+}
+
+.turno-main {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex: 1;
+}
+
+.turno-cancha {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.turno-hora {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.turno-price {
+    font-weight: 600;
+    color: #C19A6B;
+    font-size: 15px;
+}
+
+/* Total */
+.confirmation-total {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-top: 24px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.total-label {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.total-value {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Footer */
+.confirmation-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 24px;
+    border-top: 1px solid #ecf0f1;
+}
+
+.btn-print,
+.btn-close-confirmation {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-print {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-print:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-close-confirmation {
+    background: linear-gradient(135deg, #C19A6B, #A67C52);
+    color: white;
+    box-shadow: 0 2px 8px rgba(193, 154, 107, 0.3);
+}
+
+.btn-close-confirmation:hover {
+    background: linear-gradient(135deg, #A67C52, #8B6F47);
+    box-shadow: 0 4px 12px rgba(193, 154, 107, 0.4);
+    transform: translateY(-1px);
+}
+
+.confirmation-message {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .tournament-confirmation {
+        padding: 20px;
+    }
+
+    .confirmation-content {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .info-section {
+        break-inside: avoid;
+    }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .tournament-confirmation {
+        padding: 20px;
+    }
+
+    .teams-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .turno-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .confirmation-footer {
+        flex-direction: column;
+    }
+
+    .btn-print,
+    .btn-close-confirmation {
+        width: 100%;
+    }
+}

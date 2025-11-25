@@ -19,25 +19,45 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('CANCELADA', 'reserva')")
         
         # TipoCancha
-        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Futbol', 500.00)")
-        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Basquet', 400.00)")
-        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Tenis', 300.00)")
-        
+        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 11 césped', 110000)")
+        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 9 césped', 90000)")
+        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 7 césped', 70000)")
+        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 5 sintético', 45000)")
+        cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 7 sintético', 63000)")
+
         # Cancha
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'Cancha 1')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'Cancha 2')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (2, 'Cancha 3')")
-        
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'F11 C 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (2, 'F9 C 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 2')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 3')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 4')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (4, 'F5 Sintetico 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (4, 'F5 Sintetico 2')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (4, 'F5 Sintetico 3')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 2')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 3')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 4')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 5')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 6')")
+                
         # Servicio
-        cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Agua', 50.00)")
-        cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Bebidas', 100.00)")
-        cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Arbitro', 150.00)")
-        
+        cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Banco de suplentes', 5000)")
+        cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Iluminacion', 3000)")
+        cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Techada', 5000)")
+
         # CanchaServicio
         cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (1, 1)")
-        cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (2, 2)")
-        cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (3, 1)")
-        
+        cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (2, 1)")
+        for c in [1, 2, 3, 4, 5, 6]:
+            cursor.execute(f"INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES ({c}, 2)")
+        cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (10, 2)")
+        cursor.execute("INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES (11, 2)")
+        for c in [7, 8, 9]:
+            cursor.execute(f"INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES ({c}, 2)")
+        for c in [7, 8, 9]:
+            cursor.execute(f"INSERT INTO CanchaServicio (id_cancha, id_servicio) VALUES ({c}, 3)")   
         # Horario
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('15:00', '16:00')")
         cursor.execute("INSERT INTO Horario (hora_inicio, hora_fin) VALUES ('16:00', '17:00')")

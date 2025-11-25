@@ -16,7 +16,7 @@ const Home = () => {
         <div className="hero-content hero-center">
           <h1 className="hero-title">DonBalón</h1>
           <p className="hero-sub">
-            Reserva canchas y participa en torneos con la mejor experiencia.
+            Reserva canchas y gestiona tu torneo con la mejor experiencia.
           </p>
 
           <div className="hero-ctas">
