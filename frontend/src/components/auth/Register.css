@@ -1,0 +1,192 @@
+.register-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.register-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 580px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: slideIn 0.3s ease;
+    margin: auto;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.register-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.register-close:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.register-title {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.register-subtitle {
+    margin: 0 0 24px 0;
+    color: #7f8c8d;
+    font-size: 15px;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.register-error {
+    background: #fee;
+    color: #c0392b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #f8d7da;
+    font-size: 14px;
+}
+
+.register-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.register-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.register-field label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.register-field input {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.register-field input:focus {
+    outline: none;
+    border-color: #C19A6B;
+    box-shadow: 0 0 0 3px rgba(193, 154, 107, 0.1);
+}
+
+.register-field input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.register-submit {
+    background: linear-gradient(135deg, #C19A6B, #A67C52);
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.register-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, #A67C52, #8B6F47);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(193, 154, 107, 0.3);
+}
+
+.register-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.register-footer {
+    margin-top: 24px;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.register-footer p {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.register-footer a {
+    color: #C19A6B;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.register-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .register-modal {
+        padding: 24px;
+        max-width: 100%;
+    }
+
+    .register-title {
+        font-size: 24px;
+    }
+
+    .register-row {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+}

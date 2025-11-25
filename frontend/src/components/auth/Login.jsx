@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import './Login.css';
 
-const Login = ({ onClose, message }) => {
+const Login = ({ onClose, message, onSwitchToRegister }) => {
     const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -81,7 +81,18 @@ const Login = ({ onClose, message }) => {
                 </form>
 
                 <div className="login-footer">
-                    <p>¿No tienes cuenta? <a href="#register">Regístrate aquí</a></p>
+                    <p>
+                        ¿No tienes cuenta?{' '}
+                        <a
+                            href="#register"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onSwitchToRegister();
+                            }}
+                        >
+                            Regístrate aquí
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

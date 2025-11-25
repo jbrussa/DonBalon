@@ -50,6 +50,14 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
+.nav-cta-secondary {
+  background: linear-gradient(180deg, #C19A6B, #A67C52);
+}
+
+.nav-cta-secondary:hover {
+  background: linear-gradient(180deg, #A67C52, #8B6F47);
+}
+
 .user-name {
   color: #7f5f3f;
   font-weight: 600;

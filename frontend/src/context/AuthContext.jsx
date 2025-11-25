@@ -38,14 +38,42 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userData = await response.json();
-      
+
       // Guardar usuario en estado y localStorage
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
-      
+
       return { success: true, user: userData };
     } catch (error) {
       console.error('Error en login:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await fetch(`${API_BASE}/clientes/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Error al registrar usuario');
+      }
+
+      const newUser = await response.json();
+
+      // Guardar usuario en estado y localStorage
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+
+      return { success: true, user: newUser };
+    } catch (error) {
+      console.error('Error en registro:', error);
       return { success: false, error: error.message };
     }
   };
@@ -66,6 +94,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     login,
+    register,
     logout,
     isAdmin,
     isAuthenticated,
