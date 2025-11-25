@@ -76,6 +76,28 @@ export default function Schedule() {
       .catch(() => setServicios([]));
   }, [isInitializing]);
 
+  // Crear turnos cuando cambia la fecha seleccionada
+  useEffect(() => {
+    if (isInitializing || !date) return;
+
+    async function crearTurnosFecha() {
+      try {
+        await fetch(`${API_BASE}/turnos/crear-del-dia?fecha=${date}`, {
+          method: 'POST',
+        });
+
+        // Recargar los turnos después de crearlos
+        const turnosResponse = await fetch(`${API_BASE}/turnos`);
+        const turnosData = await turnosResponse.json();
+        setTurnos(turnosData);
+      } catch (error) {
+        console.error('Error al crear turnos para la fecha seleccionada:', error);
+      }
+    }
+
+    crearTurnosFecha();
+  }, [date, isInitializing]);
+
   // Map horarios to sorted time slots (use hora_inicio)
   const timeSlots = useMemo(() => {
     if (!horarios || horarios.length === 0) {
@@ -165,6 +187,22 @@ export default function Schedule() {
   const handleProcederReserva = () => {
     if (selectedTurnos.length === 0) {
       alert('Debe seleccionar al menos un turno');
+      return;
+    }
+
+    // Validar que ningún turno sea de una fecha pasada
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const turnosPasados = selectedTurnos.filter(turno => {
+      const fechaTurno = new Date(turno.fecha + 'T00:00:00');
+      return fechaTurno < hoy;
+    });
+
+    if (turnosPasados.length > 0) {
+      alert('No se pueden reservar turnos de fechas pasadas. Por favor, seleccione solo turnos de fechas actuales o futuras.');
+      // Limpiar los turnos pasados de la selección
+      setSelectedTurnos(selectedTurnos.filter(t => !turnosPasados.includes(t)));
       return;
     }
 

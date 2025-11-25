@@ -26,8 +26,8 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 7 sintético', 63000)")
 
         # Cancha
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'F11 C 1')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (2, 'F9 C 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (1, 'F11 Cesped 1')")
+        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (2, 'F9 Cesped 1')")
         cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 1')")
         cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 2')")
         cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (3, 'F7 Cesped 3')")
@@ -37,10 +37,7 @@ def insert_sample_data(db_path):
         cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (4, 'F5 Sintetico 3')")
         cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 1')")
         cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 2')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 3')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 4')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 5')")
-        cursor.execute("INSERT INTO Cancha (id_tipo, nombre) VALUES (5, 'F7 Sintetico 6')")
+
                 
         # Servicio
         cursor.execute("INSERT INTO Servicio (descripcion, costo_servicio) VALUES ('Banco de suplentes', 5000)")

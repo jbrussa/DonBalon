@@ -43,6 +43,8 @@ class TurnoService:
         Crea todos los turnos para todas las canchas y horarios en una fecha específica.
         Si no se especifica fecha, se usa la fecha actual.
         
+        Si la fecha es anterior a hoy, los turnos se crean en estado "no disponible".
+        
         Args:
             fecha: Fecha para la cual crear los turnos (default: hoy)
             
@@ -51,6 +53,9 @@ class TurnoService:
         """
         if fecha is None:
             fecha = date.today()
+        
+        # Verificar si la fecha es anterior a hoy
+        es_fecha_pasada = fecha < date.today()
             
         # Obtener todas las canchas y horarios
         canchas = self.cancha_repository.get_all()
@@ -72,18 +77,23 @@ class TurnoService:
                     omitidos += 1
                     continue
                 
-                # Crear el turno (por defecto se crea como disponible)
+                # Crear el turno
                 nuevo_turno = Turno(
                     id_cancha=cancha.id_cancha,
                     id_horario=horario.id_horario,
                     fecha=fecha
                 )
                 
+                # Si la fecha es pasada, marcar como no disponible
+                if es_fecha_pasada:
+                    nuevo_turno.reservar()
+                
                 self.repository.create(nuevo_turno)
                 creados += 1
         
         return {
             "fecha": fecha.isoformat(),
+            "es_fecha_pasada": es_fecha_pasada,
             "turnos_creados": creados,
             "turnos_omitidos": omitidos,
             "total_canchas": len(canchas),

@@ -103,14 +103,25 @@ def delete_turno(id_turno: int, service: TurnoService = Depends(get_turno_servic
 
 
 @router.post("/crear-del-dia", status_code=status.HTTP_200_OK)
-def crear_turnos_del_dia(fecha: Optional[date] = None, service: TurnoService = Depends(get_turno_service)):
+def crear_turnos_del_dia(fecha: Optional[str] = None, service: TurnoService = Depends(get_turno_service)):
     """
     Crea todos los turnos para todas las canchas y horarios en una fecha específica.
     Si no se especifica fecha, se usa la fecha actual.
+    Acepta fecha como query parameter en formato YYYY-MM-DD.
     """
     try:
-        resultado = service.crear_turnos_del_dia(fecha)
+        fecha_obj = None
+        if fecha:
+            from datetime import datetime
+            fecha_obj = datetime.strptime(fecha, "%Y-%m-%d").date()
+        
+        resultado = service.crear_turnos_del_dia(fecha_obj)
         return resultado
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Formato de fecha inválido. Use YYYY-MM-DD: {str(e)}"
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

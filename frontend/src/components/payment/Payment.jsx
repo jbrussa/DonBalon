@@ -18,6 +18,8 @@ const Payment = ({ selectedTurnos, onClose }) => {
 
     // Campos de tarjeta
     const [numeroTarjeta, setNumeroTarjeta] = useState('');
+    const [nombreTitular, setNombreTitular] = useState('');
+    const [apellidoTitular, setApellidoTitular] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
     const [codigoSeguridad, setCodigoSeguridad] = useState('');
 
@@ -83,6 +85,16 @@ const Payment = ({ selectedTurnos, onClose }) => {
 
     // Validar campos de tarjeta
     const validarCamposTarjeta = () => {
+        if (!nombreTitular || nombreTitular.trim().length < 2) {
+            setError('Debe ingresar el nombre del titular');
+            return false;
+        }
+
+        if (!apellidoTitular || apellidoTitular.trim().length < 2) {
+            setError('Debe ingresar el apellido del titular');
+            return false;
+        }
+
         if (!numeroTarjeta || numeroTarjeta.replace(/\s/g, '').length < 13) {
             setError('Número de tarjeta inválido');
             return false;
@@ -284,6 +296,34 @@ const Payment = ({ selectedTurnos, onClose }) => {
                     <div className="payment-section">
                         <h3>Datos de la Tarjeta</h3>
                         <div className="card-fields">
+                            <div className="card-row">
+                                <div className="payment-field">
+                                    <label htmlFor="nombreTitular">Nombre del Titular *</label>
+                                    <input
+                                        type="text"
+                                        id="nombreTitular"
+                                        value={nombreTitular}
+                                        onChange={(e) => setNombreTitular(e.target.value)}
+                                        placeholder="Juan"
+                                        required
+                                        disabled={processingPayment}
+                                    />
+                                </div>
+
+                                <div className="payment-field">
+                                    <label htmlFor="apellidoTitular">Apellido del Titular *</label>
+                                    <input
+                                        type="text"
+                                        id="apellidoTitular"
+                                        value={apellidoTitular}
+                                        onChange={(e) => setApellidoTitular(e.target.value)}
+                                        placeholder="Pérez"
+                                        required
+                                        disabled={processingPayment}
+                                    />
+                                </div>
+                            </div>
+
                             <div className="payment-field">
                                 <label htmlFor="numeroTarjeta">Número de Tarjeta *</label>
                                 <input

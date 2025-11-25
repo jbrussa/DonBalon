@@ -316,6 +316,19 @@ export default function Tournament({ onClose }) {
         }
 
         try {
+            // Validar que todos los datos requeridos estén presentes
+            if (!totalPartidos || isNaN(parseInt(totalPartidos))) {
+                setError('Debe ingresar la cantidad total de partidos');
+                setLoading(false);
+                return;
+            }
+
+            if (!tiposCanchaSeleccionados || tiposCanchaSeleccionados.length === 0) {
+                setError('Debe seleccionar al menos un tipo de cancha');
+                setLoading(false);
+                return;
+            }
+
             const response = await fetch(`${API_BASE}/torneos/reservar`, {
                 method: 'POST',
                 headers: {
@@ -328,15 +341,21 @@ export default function Tournament({ onClose }) {
                     fecha_fin: fechaFin,
                     equipos: equipos,
                     total_partidos: parseInt(totalPartidos),
-                    partidos_por_dia: partidosPorDia,
+                    partidos_por_dia: parseInt(partidosPorDia),
                     id_metodo_pago: parseInt(metodoPagoSeleccionado),
                     tipos_cancha: tiposCanchaSeleccionados
                 })
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Error al crear el torneo');
+                let errorMessage = 'Error al crear el torneo';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || errorMessage;
+                } catch {
+                    errorMessage = `Error del servidor (${response.status}): ${response.statusText}`;
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -344,7 +363,8 @@ export default function Tournament({ onClose }) {
             setPaso(3);
 
         } catch (err) {
-            setError(err.message);
+            console.error('Error completo:', err);
+            setError(err.message || 'Error desconocido al crear el torneo');
         } finally {
             setLoading(false);
         }

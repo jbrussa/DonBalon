@@ -75,6 +75,7 @@ class ReservaService:
         1. Valida disponibilidad y calcula precios en memoria.
         2. Abre transacción y persiste todo.
         """
+        from datetime import date as dt_date
         
         # --- PASADA 1: Validación y Cálculo (Lectura) ---
         total_reserva = Decimal("0.00")
@@ -93,6 +94,10 @@ class ReservaService:
 
 
         for item in data.items:
+            # VALIDACIÓN: Verificar que la fecha no sea anterior a hoy
+            if item.fecha < dt_date.today():
+                raise ValueError(f"No se puede reservar un turno para una fecha pasada ({item.fecha}). Por favor seleccione una fecha actual o futura.")
+            
             # 1. Verificar si ya existe un turno para esa cancha/horario/fecha
             existing_turno = self.turno_repository.get_by_cancha_horario_fecha(
                 item.id_cancha, item.id_horario, item.fecha

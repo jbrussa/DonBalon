@@ -25,6 +25,7 @@ from repositories.tipo_cancha_repository import TipoCanchaRepository
 from repositories.cancha_servicio_repository import CanchaServicioRepository
 from repositories.servicio_repository import ServicioRepository
 from repositories.metodo_pago_repository import MetodoPagoRepository
+from repositories.cliente_repository import ClienteRepository
 from schemas.torneo_reserva_schema import TorneoReservaRequest, EquipoInput
 from data.database_connection import DatabaseConnection
 
@@ -54,6 +55,7 @@ class TorneoReservaService:
         self.cancha_servicio_repo = CanchaServicioRepository(connection=self.connection)
         self.servicio_repo = ServicioRepository(connection=self.connection)
         self.metodo_pago_repo = MetodoPagoRepository(connection=self.connection)
+        self.cliente_repo = ClienteRepository(connection=self.connection)
     
     def calcular_max_partidos_por_dia(self, num_equipos: int = None, tipos_cancha: List[int] = None) -> int:
         """
@@ -108,12 +110,22 @@ class TorneoReservaService:
         Valida si hay suficientes turnos disponibles para el torneo SIN crear la reserva.
         Retorna diccionario con disponibilidad, monto exacto y mensaje.
         
+        IMPORTANTE: Crea los turnos para el rango de fechas si no existen, para que
+        estén disponibles cuando se haga la reserva real.
+        
         Usa el MISMO algoritmo de selección que crear_torneo_con_reserva para calcular
         el monto exacto que se cobrará.
         
         Útil para validar ANTES de procesar el pago.
         """
         from decimal import Decimal
+        
+        # CREAR todos los turnos necesarios para el rango de fechas
+        # Esto asegura que existan cuando se haga la reserva real
+        fecha_actual = fecha_inicio
+        while fecha_actual <= fecha_fin:
+            self._crear_turnos_del_dia(fecha_actual, tipos_cancha)
+            fecha_actual += timedelta(days=1)
         
         # Simular la selección de turnos usando el mismo algoritmo
         turnos_simulados = self.seleccionar_turnos_automaticos(
@@ -155,10 +167,9 @@ class TorneoReservaService:
         Retorna lista de tuplas (id_turno, id_cancha, id_horario, nombre_cancha, hora_inicio, precio)
         
         Si se proporcionan tipos_cancha, solo retorna turnos de canchas de esos tipos
-        """
-        # Primero crear los turnos del día si no existen
-        self._crear_turnos_del_dia(fecha, tipos_cancha)
         
+        NOTA: No crea turnos aquí. Los turnos deben ser creados previamente.
+        """
         # Obtener todos los turnos disponibles de esa fecha
         turnos = self.turno_repo.get_by_fecha(fecha)
         turnos_info = []
@@ -335,6 +346,11 @@ class TorneoReservaService:
         if num_equipos < 2:
             raise ValueError("Se requieren al menos 2 equipos para crear un torneo")
         
+        # Validar que el cliente existe
+        cliente = self.cliente_repo.get_by_id(data.id_cliente)
+        if not cliente:
+            raise ValueError(f"El cliente con ID {data.id_cliente} no existe")
+        
         # Validar que los tipos de cancha existan
         for id_tipo in data.tipos_cancha:
             tipo = self.tipo_cancha_repo.get_by_id(id_tipo)
@@ -371,6 +387,13 @@ class TorneoReservaService:
             estado_reserva = ReservaPagada()
         
         try:
+            # IMPORTANTE: Asegurarnos que los turnos existen ANTES de la transacción
+            # Re-crear turnos para todo el rango de fechas
+            fecha_actual = data.fecha_inicio
+            while fecha_actual <= data.fecha_fin:
+                self._crear_turnos_del_dia(fecha_actual, data.tipos_cancha)
+                fecha_actual += timedelta(days=1)
+            
             # Deshabilitar autocommit para manejar transacción
             self.torneo_repo.autocommit = False
             self.equipo_repo.autocommit = False
@@ -445,6 +468,8 @@ class TorneoReservaService:
                         precio_total_item=turno_data['precio']
                     )
                     self.detalle_repo.create(detalle)
+                else:
+                    raise ValueError(f"No se encontró el turno con ID {turno_data['id_turno']}")
             
             # 7. Registrar el pago
             nuevo_pago = Pago(
