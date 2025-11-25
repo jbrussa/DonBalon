@@ -4,6 +4,7 @@ import Login from '../auth/Login';
 import Register from '../auth/Register';
 import Tournament from '../tournament/Tournament';
 import Reports from '../reports/Reports';
+import UserManager from '../admin/UserManager';
 import './Header.css';
 
 const Header = () => {
@@ -11,6 +12,7 @@ const Header = () => {
   const [showRegister, setShowRegister] = useState(false);
   const [showTournament, setShowTournament] = useState(false);
   const [showReports, setShowReports] = useState(false);
+  const [showUserManager, setShowUserManager] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
 
@@ -46,6 +48,17 @@ const Header = () => {
     }
   };
 
+  const handleUserManagerClick = () => {
+    if (!isAuthenticated()) {
+      setLoginMessage('Debes iniciar sesión para gestionar usuarios');
+      setShowLogin(true);
+    } else if (!isAdmin()) {
+      alert('No tienes permisos para gestionar usuarios. Esta función es solo para administradores.');
+    } else {
+      setShowUserManager(true);
+    }
+  };
+
   const handleSwitchToLogin = () => {
     setShowRegister(false);
     setShowLogin(true);
@@ -72,6 +85,14 @@ const Header = () => {
         alert('No tienes permisos para acceder a los reportes. Esta función es solo para administradores.');
       }
     }
+    // Si se autenticó y venía del botón de gestión de usuarios
+    if (isAuthenticated() && loginMessage.includes('gestionar usuarios')) {
+      if (isAdmin()) {
+        setShowUserManager(true);
+      } else {
+        alert('No tienes permisos para gestionar usuarios. Esta función es solo para administradores.');
+      }
+    }
   };
 
   return (
@@ -83,9 +104,14 @@ const Header = () => {
             Torneos
           </button>
           {isAuthenticated() && isAdmin() && (
-            <button className="nav-link nav-link-button" onClick={handleReportsClick}>
-              Reportes
-            </button>
+            <>
+              <button className="nav-link nav-link-button" onClick={handleReportsClick}>
+                Reportes
+              </button>
+              <button className="nav-link nav-link-button" onClick={handleUserManagerClick}>
+                Usuarios
+              </button>
+            </>
           )}
           {!isAuthenticated() && (
             <button className="nav-cta nav-cta-secondary" onClick={handleRegisterClick}>
@@ -124,6 +150,11 @@ const Header = () => {
       {showReports && (
         <Reports
           onClose={() => setShowReports(false)}
+        />
+      )}
+      {showUserManager && (
+        <UserManager
+          onClose={() => setShowUserManager(false)}
         />
       )}
     </>

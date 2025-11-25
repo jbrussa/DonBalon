@@ -39,6 +39,18 @@ def get_cliente(id_cliente: int, service: ClienteService = Depends(get_cliente_s
     return ClienteResponse(**cliente.to_dict())
 
 
+@router.get("/email/{email}", response_model=ClienteResponse)
+def get_cliente_by_email(email: str, service: ClienteService = Depends(get_cliente_service)):
+    """Obtener un cliente por email"""
+    cliente = service.repository.get_by_mail(email)
+    if not cliente:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Cliente con email {email} no encontrado"
+        )
+    return ClienteResponse(**cliente.to_dict())
+
+
 @router.post("/", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED)
 def create_cliente(cliente_data: ClienteCreate, service: ClienteService = Depends(get_cliente_service)):
     """Crear un nuevo cliente"""
