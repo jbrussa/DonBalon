@@ -133,6 +133,69 @@ class ReservaService:
     def list_all(self) -> List[Reserva]:
         return self.repository.get_all()
 
+    def finalizar_reservas_vencidas(self) -> int:
+        """
+        Actualiza el estado de todas las reservas a 'Finalizada' si:
+        - La fecha de todos los turnos asociados ya pasó
+        - No importa el estado actual (Pendiente, Pagada, etc.)
+        
+        Returns:
+            Número de reservas actualizadas
+        """
+        from datetime import date as dt_date
+        from classes.estado_reserva.reserva_finalizada import ReservaFinalizada
+        
+        reservas_actualizadas = 0
+        fecha_hoy = dt_date.today()
+        
+        try:
+            # Deshabilitar autocommit para transacción
+            self.repository.autocommit = False
+            
+            # Obtener todas las reservas
+            todas_reservas = self.repository.get_all()
+            
+            for reserva in todas_reservas:
+                # No procesar reservas ya finalizadas o canceladas
+                estado_actual = reserva.estado_nombre.lower()
+                if estado_actual in ["finalizada", "cancelada"]:
+                    continue
+                
+                # Obtener los detalles de la reserva para verificar las fechas de los turnos
+                detalles = self.detalle_repository.get_by_reserva(reserva.id_reserva)
+                
+                if not detalles:
+                    continue
+                
+                # Verificar si todos los turnos ya pasaron
+                todos_pasaron = True
+                for detalle in detalles:
+                    turno = self.turno_repository.get_by_id(detalle.id_turno)
+                    if turno and turno.fecha:
+                        # Si hay al menos un turno que no ha pasado, no finalizar
+                        if turno.fecha >= fecha_hoy:
+                            todos_pasaron = False
+                            break
+                
+                # Si todos los turnos ya pasaron, actualizar a Finalizada
+                if todos_pasaron:
+                    reserva.cambiar_estado(ReservaFinalizada())
+                    self.repository.update(reserva)
+                    reservas_actualizadas += 1
+            
+            # Confirmar transacción
+            self.connection.commit()
+            
+            return reservas_actualizadas
+            
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+        
+        finally:
+            # Restaurar autocommit
+            self.repository.autocommit = True
+
     def get_reserva_con_detalles(self, id_reserva: int) -> Optional[dict]:
         """
         Obtiene una reserva con todos sus detalles (turnos asociados).

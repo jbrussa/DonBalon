@@ -21,6 +21,23 @@ def list_reservas(service: ReservaService = Depends(get_reserva_service)):
     return [ReservaResponse(**reserva.to_dict()) for reserva in reservas]
 
 
+@router.get("/finalizar-vencidas")
+def finalizar_reservas_vencidas(service: ReservaService = Depends(get_reserva_service)):
+    """
+    Finalizar automáticamente todas las reservas cuya fecha ya pasó.
+    Solo afecta reservas con estado 'Pagada' cuyos turnos ya ocurrieron.
+    Retorna el número de reservas actualizadas.
+    """
+    try:
+        cantidad_finalizadas = service.finalizar_reservas_vencidas()
+        return {"reservas_finalizadas": cantidad_finalizadas}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al finalizar reservas vencidas: {str(e)}"
+        )
+
+
 @router.get("/{id_reserva}", response_model=ReservaResponse)
 def get_reserva(id_reserva: int, service: ReservaService = Depends(get_reserva_service)):
     """Obtener una reserva por ID"""
