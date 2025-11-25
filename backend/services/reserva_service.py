@@ -135,15 +135,16 @@ class ReservaService:
 
     def finalizar_reservas_vencidas(self) -> int:
         """
-        Actualiza el estado de todas las reservas a 'Finalizada' si:
-        - La fecha de todos los turnos asociados ya pasó
-        - No importa el estado actual (Pendiente, Pagada, etc.)
+        Actualiza el estado de las reservas cuya fecha ya pasó:
+        - Reservas PAGADAS → FINALIZADA
+        - Reservas PENDIENTES → CANCELADA
         
         Returns:
             Número de reservas actualizadas
         """
         from datetime import date as dt_date
         from classes.estado_reserva.reserva_finalizada import ReservaFinalizada
+        from classes.estado_reserva.reserva_cancelada import ReservaCancelada
         
         reservas_actualizadas = 0
         fecha_hoy = dt_date.today()
@@ -161,6 +162,10 @@ class ReservaService:
                 if estado_actual in ["finalizada", "cancelada"]:
                     continue
                 
+                # Solo procesar Pendiente y Pagada
+                if estado_actual not in ["pendiente", "pagada"]:
+                    continue
+                
                 # Obtener los detalles de la reserva para verificar las fechas de los turnos
                 detalles = self.detalle_repository.get_by_reserva(reserva.id_reserva)
                 
@@ -172,14 +177,20 @@ class ReservaService:
                 for detalle in detalles:
                     turno = self.turno_repository.get_by_id(detalle.id_turno)
                     if turno and turno.fecha:
-                        # Si hay al menos un turno que no ha pasado, no finalizar
+                        # Si hay al menos un turno que no ha pasado, no actualizar
                         if turno.fecha >= fecha_hoy:
                             todos_pasaron = False
                             break
                 
-                # Si todos los turnos ya pasaron, actualizar a Finalizada
+                # Si todos los turnos ya pasaron, actualizar según el estado
                 if todos_pasaron:
-                    reserva.cambiar_estado(ReservaFinalizada())
+                    if estado_actual == "pagada":
+                        # Pagada → Finalizada
+                        reserva.cambiar_estado(ReservaFinalizada())
+                    elif estado_actual == "pendiente":
+                        # Pendiente → Cancelada
+                        reserva.cambiar_estado(ReservaCancelada())
+                    
                     self.repository.update(reserva)
                     reservas_actualizadas += 1
             
