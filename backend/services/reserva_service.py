@@ -65,8 +65,291 @@ class ReservaService:
     def delete(self, id_reserva: int) -> None:
         self.repository.delete(id_reserva)
 
+    def eliminar_reserva_completa(self, id_reserva: int) -> None:
+        """
+        Elimina una reserva completa solo si está en estado 'Pendiente'.
+        Elimina en cascada:
+        - Pagos asociados
+        - Turnos asociados
+        - Detalles de reserva
+        - La reserva misma
+        
+        Raises:
+            ValueError: Si la reserva no está en estado Pendiente
+        """
+        # Verificar que la reserva existe
+        reserva = self.repository.get_by_id(id_reserva)
+        if not reserva:
+            raise ValueError(f"Reserva con ID {id_reserva} no encontrada")
+        
+        # VALIDACIÓN: Solo permitir eliminar si está en estado Pendiente
+        estado_actual = reserva.estado_nombre.lower()
+        if estado_actual != "pendiente":
+            raise ValueError(f"No se puede eliminar una reserva en estado '{reserva.estado_nombre}'. Solo se pueden eliminar reservas en estado 'Pendiente'.")
+        
+        try:
+            # Deshabilitar autocommit para transacción
+            self.repository.autocommit = False
+            self.detalle_repository.autocommit = False
+            self.turno_repository.autocommit = False
+            self.pago_repository.autocommit = False
+            
+            # ORDEN IMPORTANTE: Respetar las claves foráneas
+            
+            # 1. Eliminar pagos asociados (FK a Reserva)
+            pagos = self.pago_repository.get_by_reserva(id_reserva)
+            for pago in pagos:
+                self.pago_repository.delete(pago.id_pago)
+            
+            # 2. Obtener detalles y sus turnos asociados
+            detalles = self.detalle_repository.get_by_reserva(id_reserva)
+            turnos_ids = [detalle.id_turno for detalle in detalles]
+            
+            # 3. Eliminar detalles de reserva primero (FK a Reserva y Turno)
+            for detalle in detalles:
+                self.detalle_repository.delete(detalle.id_detalle)
+            
+            # 4. Ahora eliminar turnos (ya no hay FK desde ReservaDetalle)
+            for turno_id in turnos_ids:
+                self.turno_repository.delete(turno_id)
+            
+            # 5. Finalmente eliminar la reserva
+            self.repository.delete(id_reserva)
+            
+            # Confirmar transacción
+            self.connection.commit()
+            
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+        
+        finally:
+            # Restaurar autocommit
+            self.repository.autocommit = True
+            self.detalle_repository.autocommit = True
+            self.turno_repository.autocommit = True
+            self.pago_repository.autocommit = True
+
     def list_all(self) -> List[Reserva]:
         return self.repository.get_all()
+
+    def get_reserva_con_detalles(self, id_reserva: int) -> Optional[dict]:
+        """
+        Obtiene una reserva con todos sus detalles (turnos asociados).
+        Retorna un diccionario con la reserva y lista de detalles con info de turnos.
+        """
+        reserva = self.repository.get_by_id(id_reserva)
+        if not reserva:
+            return None
+        
+        # Obtener detalles de la reserva
+        detalles = self.detalle_repository.get_by_reserva(id_reserva)
+        
+        # Enriquecer cada detalle con información del turno
+        detalles_completos = []
+        for detalle in detalles:
+            turno = self.turno_repository.get_by_id(detalle.id_turno)
+            if turno:
+                detalles_completos.append({
+                    "id_detalle": detalle.id_detalle,
+                    "id_turno": turno.id_turno,
+                    "id_cancha": turno.id_cancha,
+                    "id_horario": turno.id_horario,
+                    "fecha": turno.fecha.isoformat() if turno.fecha else None,
+                    "estado_turno": turno.estado_nombre,
+                    "precio_total_item": str(detalle.precio_total_item)
+                })
+        
+        return {
+            **reserva.to_dict(),
+            "detalles": detalles_completos
+        }
+
+    def get_reservas_por_cliente_email(self, email: str) -> List[dict]:
+        """
+        Obtiene todas las reservas asociadas a un cliente por su email.
+        Retorna una lista de reservas con sus detalles.
+        """
+        from repositories.cliente_repository import ClienteRepository
+        
+        cliente_repository = ClienteRepository(connection=self.connection)
+        cliente = cliente_repository.get_by_mail(email)
+        
+        if not cliente:
+            return []
+        
+        # Obtener todas las reservas del cliente
+        reservas = self.repository.get_all()
+        reservas_cliente = [r for r in reservas if r.id_cliente == cliente.id_cliente]
+        
+        # Enriquecer cada reserva con sus detalles
+        resultado = []
+        for reserva in reservas_cliente:
+            reserva_completa = self.get_reserva_con_detalles(reserva.id_reserva)
+            if reserva_completa:
+                resultado.append(reserva_completa)
+        
+        return resultado
+
+    def get_reserva_por_turno(self, id_cancha: int, id_horario: int, fecha: str) -> Optional[dict]:
+        """
+        Obtiene la reserva asociada a un turno específico.
+        Retorna la reserva completa con sus detalles o None si no existe.
+        """
+        from datetime import date as dt_date
+        
+        # Convertir fecha string a date
+        try:
+            fecha_obj = dt_date.fromisoformat(fecha)
+        except ValueError:
+            return None
+        
+        # Buscar el turno específico
+        turno = self.turno_repository.get_by_cancha_horario_fecha(id_cancha, id_horario, fecha_obj)
+        
+        if not turno:
+            return None
+        
+        # Buscar el detalle de reserva asociado a este turno
+        detalles = self.detalle_repository.get_by_turno(turno.id_turno)
+        
+        if not detalles or len(detalles) == 0:
+            return None
+        
+        # Obtener la reserva del primer detalle (un turno solo puede estar en una reserva)
+        detalle = detalles[0]
+        return self.get_reserva_con_detalles(detalle.id_reserva)
+
+    def actualizar_reserva_con_turnos(self, id_reserva: int, nuevo_estado: str) -> Reserva:
+        """
+        Actualiza el estado de una reserva y maneja los turnos asociados.
+        Si la reserva se cancela, libera los turnos a estado disponible.
+        """
+        from classes.estado_turno.turno_disponible import TurnoDisponible
+        
+        # Obtener la reserva actual
+        reserva = self.repository.get_by_id(id_reserva)
+        if not reserva:
+            raise ValueError(f"Reserva con ID {id_reserva} no encontrada")
+        
+        # Cambiar estado de la reserva
+        from classes.reserva import ESTADOS_MAP
+        estado_class = ESTADOS_MAP.get(nuevo_estado.lower())
+        if not estado_class:
+            raise ValueError(f"Estado '{nuevo_estado}' no válido")
+        
+        reserva.cambiar_estado(estado_class())
+        
+        try:
+            # Deshabilitar autocommit para transacción
+            self.repository.autocommit = False
+            self.turno_repository.autocommit = False
+            
+            # Si el nuevo estado es "cancelada", liberar los turnos
+            if nuevo_estado.lower() == "cancelada":
+                detalles = self.detalle_repository.get_by_reserva(id_reserva)
+                for detalle in detalles:
+                    turno = self.turno_repository.get_by_id(detalle.id_turno)
+                    if turno:
+                        turno.cambiar_estado(TurnoDisponible())
+                        self.turno_repository.update(turno)
+            
+            # Actualizar la reserva
+            self.repository.update(reserva)
+            
+            # Confirmar transacción
+            self.connection.commit()
+            
+            return reserva
+            
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+        
+        finally:
+            # Restaurar autocommit
+            self.repository.autocommit = True
+            self.turno_repository.autocommit = True
+
+    def actualizar_reserva_completa(self, id_reserva: int, nuevo_monto: Optional[Decimal] = None, 
+                                     nueva_fecha: Optional[date] = None, nuevo_estado: Optional[str] = None) -> Reserva:
+        """
+        Actualiza una reserva con validaciones de reglas de negocio:
+        - Solo permite cambiar monto si la reserva está en estado 'Pendiente'
+        - Si se cambia la fecha de la reserva, actualiza también la fecha de todos los turnos asociados
+        - Si se cambia el estado a 'Cancelada', libera los turnos
+        """
+        from classes.estado_turno.turno_disponible import TurnoDisponible
+        from datetime import timedelta
+        
+        # Obtener la reserva actual
+        reserva = self.repository.get_by_id(id_reserva)
+        if not reserva:
+            raise ValueError(f"Reserva con ID {id_reserva} no encontrada")
+        
+        # VALIDACIÓN: No permitir cambio de monto si no está en estado Pendiente
+        if nuevo_monto is not None and nuevo_monto != reserva.monto_total:
+            estado_actual = reserva.estado_nombre.lower()
+            if estado_actual != "pendiente":
+                raise ValueError(f"No se puede modificar el monto de una reserva en estado '{reserva.estado_nombre}'. Solo se permite modificar el monto de reservas en estado 'Pendiente'.")
+        
+        try:
+            # Deshabilitar autocommit para transacción
+            self.repository.autocommit = False
+            self.turno_repository.autocommit = False
+            
+            # Cambiar estado si se proporciona
+            if nuevo_estado is not None:
+                from classes.reserva import ESTADOS_MAP
+                estado_class = ESTADOS_MAP.get(nuevo_estado.lower())
+                if estado_class:
+                    reserva.cambiar_estado(estado_class())
+                    
+                    # Si el nuevo estado es "cancelada", liberar los turnos
+                    if nuevo_estado.lower() == "cancelada":
+                        detalles = self.detalle_repository.get_by_reserva(id_reserva)
+                        for detalle in detalles:
+                            turno = self.turno_repository.get_by_id(detalle.id_turno)
+                            if turno:
+                                turno.cambiar_estado(TurnoDisponible())
+                                self.turno_repository.update(turno)
+            
+            # Actualizar monto si se proporciona (ya validado arriba)
+            if nuevo_monto is not None:
+                reserva.monto_total = nuevo_monto
+            
+            # Actualizar fecha de reserva y turnos asociados si se proporciona
+            if nueva_fecha is not None and nueva_fecha != reserva.fecha_reserva:
+                fecha_original = reserva.fecha_reserva
+                diferencia_dias = (nueva_fecha - fecha_original).days
+                
+                reserva.fecha_reserva = nueva_fecha
+                
+                # Actualizar fecha de todos los turnos asociados
+                detalles = self.detalle_repository.get_by_reserva(id_reserva)
+                for detalle in detalles:
+                    turno = self.turno_repository.get_by_id(detalle.id_turno)
+                    if turno and turno.fecha:
+                        # Ajustar la fecha del turno por la misma diferencia
+                        turno.fecha = turno.fecha + timedelta(days=diferencia_dias)
+                        self.turno_repository.update(turno)
+            
+            # Actualizar la reserva
+            self.repository.update(reserva)
+            
+            # Confirmar transacción
+            self.connection.commit()
+            
+            return reserva
+            
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+        
+        finally:
+            # Restaurar autocommit
+            self.repository.autocommit = True
+            self.turno_repository.autocommit = True
 
     def registrar_reserva_completa(self, data: ReservaTransaccionSchema) -> Reserva:
         """

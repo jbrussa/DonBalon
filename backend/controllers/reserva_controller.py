@@ -33,6 +33,50 @@ def get_reserva(id_reserva: int, service: ReservaService = Depends(get_reserva_s
     return ReservaResponse(**reserva.to_dict())
 
 
+@router.get("/{id_reserva}/detalles")
+def get_reserva_con_detalles(id_reserva: int, service: ReservaService = Depends(get_reserva_service)):
+    """Obtener una reserva con todos sus detalles (turnos asociados)"""
+    reserva_completa = service.get_reserva_con_detalles(id_reserva)
+    if not reserva_completa:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Reserva con ID {id_reserva} no encontrada"
+        )
+    return reserva_completa
+
+
+@router.get("/cliente/email/{email}")
+def get_reservas_por_cliente_email(email: str, service: ReservaService = Depends(get_reserva_service)):
+    """Obtener todas las reservas de un cliente por su email"""
+    reservas = service.get_reservas_por_cliente_email(email)
+    if not reservas or len(reservas) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontraron reservas para el cliente con email {email}"
+        )
+    return reservas
+
+
+@router.get("/turno/buscar")
+def get_reserva_por_turno(
+    id_cancha: int,
+    id_horario: int,
+    fecha: str,
+    service: ReservaService = Depends(get_reserva_service)
+):
+    """
+    Obtener la reserva asociada a un turno específico.
+    Parámetros: id_cancha, id_horario, fecha (formato: YYYY-MM-DD)
+    """
+    reserva = service.get_reserva_por_turno(id_cancha, id_horario, fecha)
+    if not reserva:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontró una reserva para el turno especificado"
+        )
+    return reserva
+
+
 from schemas.reserva_transaccion_schema import ReservaTransaccionSchema
 
 @router.post("/", response_model=ReservaResponse, status_code=status.HTTP_201_CREATED)
@@ -58,8 +102,17 @@ def create_reserva(reserva_data: ReservaTransaccionSchema, service: ReservaServi
 
 @router.put("/{id_reserva}", response_model=ReservaResponse)
 def update_reserva(id_reserva: int, reserva_data: ReservaUpdate, service: ReservaService = Depends(get_reserva_service)):
-    """Actualizar una reserva existente (Maneja parciales correctamente)"""
-    # 1. Verificar y obtener datos ACTUALES de la BD
+    """
+    Actualizar una reserva existente.
+    Reglas de negocio:
+    - Si se cambia el estado a 'cancelada', libera automáticamente los turnos asociados.
+    - Solo permite modificar el monto si la reserva está en estado 'Pendiente'.
+    - Si se cambia la fecha de la reserva, actualiza la fecha de todos los turnos asociados.
+    """
+    from decimal import Decimal
+    from datetime import date as dt_date
+    
+    # Verificar que la reserva existe
     reserva_actual = service.get_by_id(id_reserva)
     if not reserva_actual:
         raise HTTPException(
@@ -67,30 +120,31 @@ def update_reserva(id_reserva: int, reserva_data: ReservaUpdate, service: Reserv
             detail=f"Reserva con ID {id_reserva} no encontrada"
         )
     
-    # 2. Merge inteligente
-    nuevo_cliente = reserva_data.id_cliente if reserva_data.id_cliente is not None else reserva_actual.id_cliente
-    nuevo_monto = reserva_data.monto_total if reserva_data.monto_total is not None else reserva_actual.monto_total
-    nueva_fecha = reserva_data.fecha_reserva if reserva_data.fecha_reserva is not None else reserva_actual.fecha_reserva
-    
-    # Manejo de estado
-    nuevo_estado_obj = reserva_actual.estado
-    if reserva_data.estado_reserva is not None:
-        from classes.reserva import ESTADOS_MAP, ReservaPendiente
-        estado_class = ESTADOS_MAP.get(reserva_data.estado_reserva.lower(), ReservaPendiente)
-        nuevo_estado_obj = estado_class()
-
-    # 3. Crear la instancia para actualizar con los datos mezclados
-    reserva_a_guardar = Reserva(
-        id_reserva=id_reserva,
-        id_cliente=nuevo_cliente,
-        monto_total=nuevo_monto,
-        fecha_reserva=nueva_fecha,
-        estado=nuevo_estado_obj
-    )
-    
     try:
-        service.update(reserva_a_guardar)
-        return ReservaResponse(**reserva_a_guardar.to_dict())
+        # Preparar valores para actualizar
+        nuevo_monto = None
+        if reserva_data.monto_total is not None:
+            nuevo_monto = Decimal(str(reserva_data.monto_total))
+        
+        nueva_fecha = None
+        if reserva_data.fecha_reserva is not None:
+            if isinstance(reserva_data.fecha_reserva, str):
+                nueva_fecha = dt_date.fromisoformat(reserva_data.fecha_reserva)
+            else:
+                nueva_fecha = reserva_data.fecha_reserva
+        
+        nuevo_estado = reserva_data.estado_reserva
+        
+        # Usar el método completo que maneja todas las reglas de negocio
+        reserva_actualizada = service.actualizar_reserva_completa(
+            id_reserva=id_reserva,
+            nuevo_monto=nuevo_monto,
+            nueva_fecha=nueva_fecha,
+            nuevo_estado=nuevo_estado
+        )
+        
+        return ReservaResponse(**reserva_actualizada.to_dict())
+        
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -100,13 +154,27 @@ def update_reserva(id_reserva: int, reserva_data: ReservaUpdate, service: Reserv
 
 @router.delete("/{id_reserva}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_reserva(id_reserva: int, service: ReservaService = Depends(get_reserva_service)):
-    """Eliminar una reserva"""
-    existing = service.get_by_id(id_reserva)
-    if not existing:
+    """
+    Eliminar una reserva completa (solo si está en estado Pendiente).
+    Elimina en cascada: pagos, turnos, detalles y la reserva.
+    """
+    try:
+        service.eliminar_reserva_completa(id_reserva)
+        return None
+    except ValueError as e:
+        # Errores de validación (no encontrada o estado incorrecto)
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Reserva con ID {id_reserva} no encontrada"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
-    
-    service.delete(id_reserva)
-    return None
+    except Exception as e:
+        # Log del error para debugging
+        import traceback
+        print(f"Error al eliminar reserva {id_reserva}:")
+        print(traceback.format_exc())
+        
+        # Otros errores
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al eliminar la reserva: {str(e)}"
+        )

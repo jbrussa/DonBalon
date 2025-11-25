@@ -5,6 +5,7 @@ import Register from '../auth/Register';
 import Tournament from '../tournament/Tournament';
 import Reports from '../reports/Reports';
 import UserManager from '../admin/UserManager';
+import ReservationManager from '../admin/ReservationManager';
 import './Header.css';
 
 const Header = () => {
@@ -13,6 +14,7 @@ const Header = () => {
   const [showTournament, setShowTournament] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showUserManager, setShowUserManager] = useState(false);
+  const [showReservationManager, setShowReservationManager] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
 
@@ -59,6 +61,17 @@ const Header = () => {
     }
   };
 
+  const handleReservationManagerClick = () => {
+    if (!isAuthenticated()) {
+      setLoginMessage('Debes iniciar sesión para gestionar reservas');
+      setShowLogin(true);
+    } else if (!isAdmin()) {
+      alert('No tienes permisos para gestionar reservas. Esta función es solo para administradores.');
+    } else {
+      setShowReservationManager(true);
+    }
+  };
+
   const handleSwitchToLogin = () => {
     setShowRegister(false);
     setShowLogin(true);
@@ -93,6 +106,14 @@ const Header = () => {
         alert('No tienes permisos para gestionar usuarios. Esta función es solo para administradores.');
       }
     }
+    // Si se autenticó y venía del botón de gestión de reservas
+    if (isAuthenticated() && loginMessage.includes('gestionar reservas')) {
+      if (isAdmin()) {
+        setShowReservationManager(true);
+      } else {
+        alert('No tienes permisos para gestionar reservas. Esta función es solo para administradores.');
+      }
+    }
   };
 
   return (
@@ -105,6 +126,9 @@ const Header = () => {
           </button>
           {isAuthenticated() && isAdmin() && (
             <>
+              <button className="nav-link nav-link-button" onClick={handleReservationManagerClick}>
+                Reservas
+              </button>
               <button className="nav-link nav-link-button" onClick={handleReportsClick}>
                 Reportes
               </button>
@@ -155,6 +179,11 @@ const Header = () => {
       {showUserManager && (
         <UserManager
           onClose={() => setShowUserManager(false)}
+        />
+      )}
+      {showReservationManager && (
+        <ReservationManager
+          onClose={() => setShowReservationManager(false)}
         />
       )}
     </>
