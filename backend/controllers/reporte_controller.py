@@ -183,3 +183,81 @@ def obtener_confirmacion_reserva(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener confirmación: {str(e)}"
         )
+
+
+@router.get("/facturacion-mensual", response_class=FileResponse)
+def generar_reporte_facturacion_mensual(
+    anio: int = Query(None, description="Año para filtrar (por defecto año actual)"),
+    service: ReporteService = Depends(get_reporte_service)
+):
+    """
+    Genera un PDF con la facturación mensual comparativa.
+    
+    - **anio**: Año específico para filtrar (opcional)
+    """
+    fd, temp_path = tempfile.mkstemp(suffix=".pdf", prefix="facturacion_mensual_")
+    os.close(fd)
+    
+    try:
+        service.generar_facturacion_mensual(temp_path, anio)
+        
+        anio_str = anio if anio else "actual"
+        return FileResponse(
+            path=temp_path,
+            filename=f"facturacion_mensual_{anio_str}.pdf",
+            media_type="application/pdf",
+            background=None
+        )
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar el reporte: {str(e)}"
+        )
+
+
+@router.get("/utilizacion-por-cancha", response_class=FileResponse)
+def generar_reporte_utilizacion_por_cancha(
+    anio: int = Query(None, description="Año para filtrar (por defecto año actual)"),
+    mes: int = Query(None, description="Mes para filtrar 1-12 (opcional)", ge=1, le=12),
+    service: ReporteService = Depends(get_reporte_service)
+):
+    """
+    Genera un PDF con la utilización comparativa por cancha.
+    
+    - **anio**: Año específico (opcional)
+    - **mes**: Mes específico 1-12 (opcional, requiere año)
+    """
+    if mes is not None and anio is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Si especifica un mes, debe especificar también el año"
+        )
+    
+    fd, temp_path = tempfile.mkstemp(suffix=".pdf", prefix="utilizacion_por_cancha_")
+    os.close(fd)
+    
+    try:
+        service.generar_utilizacion_por_cancha(temp_path, anio, mes)
+        
+        filename = "utilizacion_por_cancha"
+        if anio:
+            filename += f"_{anio}"
+        if mes:
+            filename += f"_{mes:02d}"
+        filename += ".pdf"
+        
+        return FileResponse(
+            path=temp_path,
+            filename=filename,
+            media_type="application/pdf",
+            background=None
+        )
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar el reporte: {str(e)}"
+        )

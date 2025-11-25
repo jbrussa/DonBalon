@@ -14,6 +14,11 @@ export default function Reports({ onClose }) {
     const [fechaFin, setFechaFin] = useState('');
     const [topN, setTopN] = useState('10');
 
+    // Estados adicionales para reportes comparativos
+    const [anioFacturacion, setAnioFacturacion] = useState(new Date().getFullYear().toString());
+    const [anioUtilizacion, setAnioUtilizacion] = useState(new Date().getFullYear().toString());
+    const [mesUtilizacion, setMesUtilizacion] = useState('');
+
     // Estados
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -25,7 +30,9 @@ export default function Reports({ onClose }) {
         { id: 'reservas_cliente', nombre: 'Reservas por Cliente', requiere: ['id_cliente'] },
         { id: 'reservas_cancha', nombre: 'Reservas por Cancha', requiere: ['id_cancha', 'fecha_inicio', 'fecha_fin'] },
         { id: 'canchas_utilizadas', nombre: 'Canchas Más Utilizadas', requiere: ['top_n'] },
-        { id: 'utilizacion_mensual', nombre: 'Utilización Mensual', requiere: [] }
+        { id: 'utilizacion_mensual', nombre: 'Utilización Mensual', requiere: [] },
+        { id: 'facturacion_mensual', nombre: 'Facturación Mensual Comparativa', requiere: ['anio_facturacion'] },
+        { id: 'utilizacion_por_cancha', nombre: 'Utilización por Cancha Comparativa', requiere: ['anio_utilizacion', 'mes_utilizacion'] }
     ];
 
     const handleTipoReporteChange = (e) => {
@@ -39,6 +46,9 @@ export default function Reports({ onClose }) {
         setFechaInicio('');
         setFechaFin('');
         setTopN('10');
+        setAnioFacturacion(new Date().getFullYear().toString());
+        setAnioUtilizacion(new Date().getFullYear().toString());
+        setMesUtilizacion('');
     };
 
     const validarFormulario = () => {
@@ -90,6 +100,33 @@ export default function Reports({ onClose }) {
             if (!topN || Number.isNaN(n) || n < 1 || n > 100) {
                 setError('El número de canchas debe estar entre 1 y 100');
                 return false;
+            }
+        }
+
+        if (reporte.requiere.includes('anio_facturacion')) {
+            const year = Number.parseInt(anioFacturacion, 10);
+            if (!anioFacturacion || Number.isNaN(year) || year < 2000 || year > 2100) {
+                setError('Debe ingresar un año válido (2000-2100)');
+                return false;
+            }
+        }
+
+        if (reporte.requiere.includes('anio_utilizacion')) {
+            const year = Number.parseInt(anioUtilizacion, 10);
+            if (!anioUtilizacion || Number.isNaN(year) || year < 2000 || year > 2100) {
+                setError('Debe ingresar un año válido (2000-2100)');
+                return false;
+            }
+        }
+
+        if (reporte.requiere.includes('mes_utilizacion')) {
+            // Mes es opcional
+            if (mesUtilizacion) {
+                const m = Number.parseInt(mesUtilizacion, 10);
+                if (Number.isNaN(m) || m < 1 || m > 12) {
+                    setError('El mes debe estar entre 1 y 12');
+                    return false;
+                }
             }
         }
 
@@ -157,6 +194,30 @@ export default function Reports({ onClose }) {
                     });
                     break;
 
+                case 'facturacion_mensual':
+                    setDatosReporte({
+                        tipo: 'facturacion_mensual',
+                        titulo: `Facturación Mensual Comparativa - Año ${anioFacturacion}`,
+                        anio: anioFacturacion
+                    });
+                    break;
+
+                case 'utilizacion_por_cancha': {
+                    let titulo = `Utilización por Cancha - Año ${anioUtilizacion}`;
+                    if (mesUtilizacion) {
+                        const meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                        titulo += ` - ${meses[parseInt(mesUtilizacion)]}`;
+                    }
+                    setDatosReporte({
+                        tipo: 'utilizacion_por_cancha',
+                        titulo,
+                        anio: anioUtilizacion,
+                        mes: mesUtilizacion
+                    });
+                    break;
+                }
+
                 default:
                     throw new Error('Tipo de reporte no implementado');
             }
@@ -199,6 +260,21 @@ export default function Reports({ onClose }) {
                 case 'utilizacion_mensual':
                     url = `${API_BASE}/reportes/utilizacion-mensual`;
                     filename = 'utilizacion_mensual.pdf';
+                    break;
+
+                case 'facturacion_mensual':
+                    url = `${API_BASE}/reportes/facturacion-mensual?anio=${anioFacturacion}`;
+                    filename = `facturacion_mensual_${anioFacturacion}.pdf`;
+                    break;
+
+                case 'utilizacion_por_cancha':
+                    url = `${API_BASE}/reportes/utilizacion-por-cancha?anio=${anioUtilizacion}`;
+                    filename = `utilizacion_por_cancha_${anioUtilizacion}`;
+                    if (mesUtilizacion) {
+                        url += `&mes=${mesUtilizacion}`;
+                        filename += `_${mesUtilizacion.padStart(2, '0')}`;
+                    }
+                    filename += '.pdf';
                     break;
 
                 default:
@@ -306,6 +382,61 @@ export default function Reports({ onClose }) {
                         <small>Número de canchas a incluir en el reporte (1-100)</small>
                     </div>
                 )}
+
+                {reporte.requiere.includes('anio_facturacion') && (
+                    <div className="report-field">
+                        <label>Año</label>
+                        <input
+                            type="number"
+                            value={anioFacturacion}
+                            onChange={(e) => setAnioFacturacion(e.target.value)}
+                            placeholder="Año"
+                            min="2000"
+                            max="2100"
+                        />
+                        <small>Año para el reporte de facturación</small>
+                    </div>
+                )}
+
+                {reporte.requiere.includes('anio_utilizacion') && (
+                    <div className="report-field">
+                        <label>Año</label>
+                        <input
+                            type="number"
+                            value={anioUtilizacion}
+                            onChange={(e) => setAnioUtilizacion(e.target.value)}
+                            placeholder="Año"
+                            min="2000"
+                            max="2100"
+                        />
+                        <small>Año para el reporte de utilización</small>
+                    </div>
+                )}
+
+                {reporte.requiere.includes('mes_utilizacion') && (
+                    <div className="report-field">
+                        <label>Mes (Opcional)</label>
+                        <select
+                            value={mesUtilizacion}
+                            onChange={(e) => setMesUtilizacion(e.target.value)}
+                        >
+                            <option value="">Todo el año</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                        <small>Mes específico o dejar vacío para todo el año</small>
+                    </div>
+                )}
             </div>
         );
     };
@@ -353,6 +484,31 @@ export default function Reports({ onClose }) {
                     <div className="report-content">
                         <div className="report-info">
                             <p>Este reporte mostrará un gráfico con la utilización mensual de todas las canchas del sistema.</p>
+                        </div>
+                    </div>
+                )}
+
+                {datosReporte.tipo === 'facturacion_mensual' && (
+                    <div className="report-content">
+                        <div className="report-info">
+                            <p><strong>Año:</strong> {datosReporte.anio}</p>
+                            <p>Este reporte mostrará un comparativo de la facturación mes a mes, incluyendo gráficos y tablas.</p>
+                            <p>Solo se incluyen reservas en estado <strong>Pagada</strong> o <strong>Finalizada</strong>.</p>
+                        </div>
+                    </div>
+                )}
+
+                {datosReporte.tipo === 'utilizacion_por_cancha' && (
+                    <div className="report-content">
+                        <div className="report-info">
+                            <p><strong>Año:</strong> {datosReporte.anio}</p>
+                            {datosReporte.mes && <p><strong>Mes:</strong> {datosReporte.mes}</p>}
+                            <p>Este reporte mostrará un comparativo del porcentaje de utilización de cada cancha:</p>
+                            <ul>
+                                <li>Tabla con turnos ocupados vs totales</li>
+                                <li>Porcentaje de utilización por cancha</li>
+                                <li>Gráficos comparativos con código de colores</li>
+                            </ul>
                         </div>
                     </div>
                 )}

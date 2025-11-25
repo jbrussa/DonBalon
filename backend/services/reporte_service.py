@@ -320,3 +320,266 @@ class ReporteService:
             "fecha_pago": str(pago.fecha_pago) if pago else str(reserva.fecha_reserva),
             "items": items_detalle
         }
+
+    def generar_facturacion_mensual(self, output_path: str, anio: int = None):
+        """Genera un PDF con la facturación mensual comparativa.
+        
+        Args:
+            output_path: Ruta del PDF de salida.
+            anio: Año específico para filtrar (opcional). Si no se provee, usa el año actual.
+        """
+        from datetime import datetime
+        
+        if anio is None:
+            anio = datetime.now().year
+        
+        # Obtener facturación por mes (solo reservas Pagadas o Finalizadas)
+        sql = (
+            "SELECT strftime('%Y-%m', r.fecha_reserva) as mes, "
+            "SUM(r.monto_total) as facturacion, "
+            "COUNT(r.id_reserva) as cantidad_reservas "
+            "FROM Reserva r "
+            "WHERE (LOWER(r.estado_reserva) = 'pagada' OR LOWER(r.estado_reserva) = 'finalizada') "
+            "AND strftime('%Y', r.fecha_reserva) = ? "
+            "GROUP BY mes ORDER BY mes"
+        )
+        
+        try:
+            rows = self.base_repo.conn.execute(sql, (str(anio),)).fetchall()
+            rows = [dict(row) for row in rows]
+        except Exception as e:
+            # Si hay error en la consulta, generar PDF con mensaje de error
+            styles = getSampleStyleSheet()
+            titulo = f"Facturación Mensual - Año {anio}"
+            elements = [Paragraph(titulo, styles["Heading2"]), Spacer(1, 12)]
+            elements.append(Paragraph(f"Error al consultar datos: {str(e)}", styles["Normal"]))
+            self._build_pdf(output_path, titulo, elements)
+            return
+        
+        styles = getSampleStyleSheet()
+        titulo = f"Facturación Mensual - Año {anio}"
+        elements = [Paragraph(titulo, styles["Heading2"]), Spacer(1, 12)]
+        
+        # Verificar si hay datos
+        if not rows or len(rows) == 0:
+            elements.append(Paragraph(f"No hay datos de facturación para el año {anio}.", styles["Normal"]))
+            self._build_pdf(output_path, titulo, elements)
+            return
+        
+        meses = [r["mes"] for r in rows]
+        facturacion = [float(r["facturacion"]) for r in rows]
+        
+        # Tabla resumen
+        table_data = [["Mes", "Facturación ($)", "Cantidad Reservas"]]
+        total_facturacion = 0
+        total_reservas = 0
+        
+        for r in rows:
+            table_data.append([
+                r["mes"],
+                f"${float(r['facturacion']):.2f}",
+                str(r["cantidad_reservas"])
+            ])
+            total_facturacion += float(r["facturacion"])
+            total_reservas += r["cantidad_reservas"]
+        
+        table_data.append(["TOTAL", f"${total_facturacion:.2f}", str(total_reservas)])
+        elements.append(self._make_table(table_data))
+        elements.append(Spacer(1, 12))
+        
+        # Gráfico comparativo
+        try:
+            import matplotlib.pyplot as plt
+            
+            page_width_pts, _ = A4
+            usable_width_pts = page_width_pts - 2 * 36
+            target_width_pts = usable_width_pts * 0.60  # Reducido de 0.75 a 0.60
+            
+            fig_width_in = target_width_pts / 72
+            fig_height_in = 3  # Reducido de 4 a 3
+            
+            fig, ax = plt.subplots(figsize=(fig_width_in, fig_height_in))
+            
+            # Gráfico de barras
+            x = list(range(len(meses)))
+            ax.bar(x, facturacion, color="tab:green", alpha=0.7)
+            ax.set_title("Facturación Mensual Comparativa")
+            ax.set_xlabel("Mes")
+            ax.set_ylabel("Facturación ($)")
+            ax.set_xticks(x)
+            ax.set_xticklabels(meses, rotation=45, ha='right')
+            ax.grid(axis='y', alpha=0.3)
+            
+            # Línea de tendencia
+            if len(facturacion) > 1:
+                import numpy as np
+                z = np.polyfit(x, facturacion, 1)
+                p = np.poly1d(z)
+                ax.plot(x, p(x), "r--", alpha=0.6, label="Tendencia")
+                ax.legend()
+            
+            plt.tight_layout()
+            
+            img_path = self._save_chart_to_png(fig)
+            elements.append(self._make_image_element(img_path, width=target_width_pts))
+            elements.append(Spacer(1, 12))
+            
+        except Exception as e:
+            elements.append(Paragraph(f"No se pudo generar el gráfico: {str(e)}", styles["Normal"]))
+        
+        self._build_pdf(output_path, titulo, elements)
+
+    def generar_utilizacion_por_cancha(self, output_path: str, anio: int = None, mes: int = None):
+        """Genera un PDF con la utilización comparativa por cancha.
+        
+        Args:
+            output_path: Ruta del PDF de salida.
+            anio: Año específico (opcional)
+            mes: Mes específico 1-12 (opcional, requiere año)
+        """
+        from datetime import datetime
+        
+        if anio is None:
+            anio = datetime.now().year
+        
+        # Construir filtro de fecha para el JOIN
+        fecha_condition = "strftime('%Y', t.fecha) = ?"
+        params = [str(anio)]
+        
+        if mes is not None:
+            fecha_condition += " AND strftime('%m', t.fecha) = ?"
+            params.append(f"{mes:02d}")
+        
+        # Obtener utilización por cancha
+        # Contar turnos ocupados (no disponibles) por cancha
+        sql = (
+            f"SELECT c.id_cancha, c.nombre, "
+            f"COUNT(DISTINCT CASE WHEN LOWER(t.estado_turno) != 'disponible' THEN t.id_turno END) as turnos_ocupados "
+            f"FROM Cancha c "
+            f"LEFT JOIN Turno t ON c.id_cancha = t.id_cancha AND {fecha_condition} "
+            f"GROUP BY c.id_cancha, c.nombre "
+            f"ORDER BY turnos_ocupados DESC"
+        )
+        
+        try:
+            rows = self.base_repo.conn.execute(sql, params).fetchall()
+            rows = [dict(row) for row in rows]
+        except Exception as e:
+            # Si hay error en la consulta, generar PDF con mensaje de error
+            styles = getSampleStyleSheet()
+            titulo = f"Utilización por Cancha - Año {anio}"
+            if mes is not None:
+                meses_nombres = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                               "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                titulo += f" - {meses_nombres[mes]}"
+            elements = [Paragraph(titulo, styles["Heading2"]), Spacer(1, 12)]
+            elements.append(Paragraph(f"Error al consultar datos: {str(e)}", styles["Normal"]))
+            self._build_pdf(output_path, titulo, elements)
+            return
+        
+        styles = getSampleStyleSheet()
+        titulo = f"Utilización por Cancha - Año {anio}"
+        if mes is not None:
+            meses_nombres = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                           "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+            titulo += f" - {meses_nombres[mes]}"
+        
+        elements = [Paragraph(titulo, styles["Heading2"]), Spacer(1, 12)]
+        
+        # Verificar si hay datos
+        if not rows or len(rows) == 0:
+            periodo = f"el año {anio}"
+            if mes is not None:
+                meses_nombres = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                               "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                periodo = f"{meses_nombres[mes]} {anio}"
+            elements.append(Paragraph(f"No hay datos de utilización para {periodo}.", styles["Normal"]))
+            self._build_pdf(output_path, titulo, elements)
+            return
+        
+        # Calcular total de turnos ocupados
+        total_turnos_ocupados = sum(r["turnos_ocupados"] for r in rows)
+        
+        # Validar que haya turnos ocupados
+        if total_turnos_ocupados == 0:
+            periodo = f"el año {anio}"
+            if mes is not None:
+                meses_nombres = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                               "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                periodo = f"{meses_nombres[mes]} {anio}"
+            elements.append(Paragraph(f"No hay turnos ocupados en {periodo}.", styles["Normal"]))
+            self._build_pdf(output_path, titulo, elements)
+            return
+        
+        # Tabla comparativa
+        table_data = [["Cancha", "Turnos Ocupados", "% del Total Ocupado"]]
+        
+        for r in rows:
+            ocupados = r["turnos_ocupados"]
+            porcentaje = (ocupados / total_turnos_ocupados * 100) if total_turnos_ocupados > 0 else 0
+            
+            table_data.append([
+                r["nombre"],
+                str(ocupados),
+                f"{porcentaje:.1f}%"
+            ])
+        
+        table_data.append(["TOTAL", str(total_turnos_ocupados), "100.0%"])
+        elements.append(self._make_table(table_data))
+        elements.append(Spacer(1, 12))
+        
+        # Gráfico de torta
+        try:
+            import matplotlib.pyplot as plt
+            
+            page_width_pts, _ = A4
+            usable_width_pts = page_width_pts - 2 * 36
+            target_width_pts = usable_width_pts * 0.65
+            
+            fig_width_in = target_width_pts / 72
+            fig_height_in = fig_width_in  # Cuadrado para torta
+            
+            fig, ax = plt.subplots(figsize=(fig_width_in, fig_height_in))
+            
+            # Filtrar canchas con turnos ocupados > 0 para el gráfico
+            canchas_con_turnos = [(r["nombre"], r["turnos_ocupados"]) for r in rows if r["turnos_ocupados"] > 0]
+            
+            if len(canchas_con_turnos) > 0:
+                canchas = [c[0] for c in canchas_con_turnos]
+                ocupados = [c[1] for c in canchas_con_turnos]
+                
+                # Colores variados
+                colors = plt.cm.Set3(range(len(canchas)))
+                
+                # Crear gráfico de torta
+                wedges, texts, autotexts = ax.pie(
+                    ocupados,
+                    labels=canchas,
+                    autopct='%1.1f%%',
+                    colors=colors,
+                    startangle=90
+                )
+                
+                # Mejorar legibilidad
+                for autotext in autotexts:
+                    autotext.set_color('white')
+                    autotext.set_fontweight('bold')
+                    autotext.set_fontsize(8)
+                
+                for text in texts:
+                    text.set_fontsize(9)
+                
+                ax.set_title("Distribución de Turnos Ocupados por Cancha")
+                
+                plt.tight_layout()
+                
+                img_path = self._save_chart_to_png(fig)
+                elements.append(self._make_image_element(img_path, width=target_width_pts))
+                elements.append(Spacer(1, 12))
+            else:
+                elements.append(Paragraph("No hay turnos ocupados para mostrar en el gráfico.", styles["Normal"]))
+            
+        except Exception as e:
+            elements.append(Paragraph(f"No se pudo generar el gráfico: {str(e)}", styles["Normal"]))
+        
+        self._build_pdf(output_path, titulo, elements)
