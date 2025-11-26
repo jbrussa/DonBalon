@@ -231,10 +231,14 @@ export default function UserManager({ onClose }) {
                                     <div className="form-field">
                                         <label>Teléfono</label>
                                         <input
-                                            type="text"
+                                            type="tel"
                                             name="telefono"
                                             value={formData.telefono}
-                                            onChange={handleInputChange}
+                                            onChange={(e) => {
+                                                // Solo permitir números
+                                                const value = e.target.value.replace(/\D/g, '');
+                                                handleInputChange({ target: { name: 'telefono', value } });
+                                            }}
                                             disabled={!editando}
                                         />
                                     </div>

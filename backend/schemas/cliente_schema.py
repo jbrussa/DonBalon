@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
 
 
@@ -7,6 +7,14 @@ class ClienteBase(BaseModel):
     apellido: str = Field(..., min_length=1, max_length=100, description="Apellido del cliente")
     mail: str = Field(..., max_length=150, description="Email del cliente")
     telefono: Optional[str] = Field(None, max_length=20, description="Teléfono del cliente")
+    
+    @field_validator('telefono')
+    @classmethod
+    def validate_telefono(cls, v):
+        if v is not None and v != '':
+            if not v.isdigit():
+                raise ValueError('El teléfono debe contener solo números')
+        return v
 
 
 class ClienteCreate(ClienteBase):
@@ -21,6 +29,14 @@ class ClienteUpdate(BaseModel):
     telefono: Optional[str] = Field(None, max_length=20)
     password: Optional[str] = Field(None, max_length=20)
     admin: Optional[bool] = Field(None)
+    
+    @field_validator('telefono')
+    @classmethod
+    def validate_telefono(cls, v):
+        if v is not None and v != '':
+            if not v.isdigit():
+                raise ValueError('El teléfono debe contener solo números')
+        return v
 
 
 class ClienteResponse(ClienteBase):

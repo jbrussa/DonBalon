@@ -149,8 +149,12 @@ const Register = ({ onClose, onSwitchToLogin }) => {
                             id="telefono"
                             name="telefono"
                             value={formData.telefono}
-                            onChange={handleChange}
-                            placeholder="Ej: +54 9 11 1234-5678"
+                            onChange={(e) => {
+                                // Solo permitir números
+                                const value = e.target.value.replace(/\D/g, '');
+                                handleChange({ target: { name: 'telefono', value } });
+                            }}
+                            placeholder="Ej: 1112345678"
                             disabled={loading}
                         />
                     </div>

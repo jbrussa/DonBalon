@@ -21,6 +21,8 @@ class ClienteService:
             raise ValueError("El teléfono del cliente es obligatorio.")
         if len(obj.telefono) > 30:
             raise ValueError("El teléfono del cliente no puede exceder los 30 caracteres.")
+        if not obj.telefono.isdigit():
+            raise ValueError("El teléfono debe contener solo números.")
         if not obj.mail:
             raise ValueError("El mail del cliente es obligatorio.")
         if len(obj.mail) > 100:
