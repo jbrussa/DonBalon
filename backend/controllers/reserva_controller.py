@@ -172,11 +172,12 @@ def update_reserva(id_reserva: int, reserva_data: ReservaUpdate, service: Reserv
 @router.delete("/{id_reserva}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_reserva(id_reserva: int, service: ReservaService = Depends(get_reserva_service)):
     """
-    Eliminar una reserva completa (solo si está en estado Pendiente).
-    Elimina en cascada: pagos, turnos, detalles y la reserva.
+    Cancelar una reserva (solo si está en estado Pendiente).
+    Cambia el estado a Cancelada y libera los turnos asociados.
+    NO elimina la reserva (mantiene historial).
     """
     try:
-        service.eliminar_reserva_completa(id_reserva)
+        service.cancelar_reserva_pendiente(id_reserva)
         return None
     except ValueError as e:
         # Errores de validación (no encontrada o estado incorrecto)
@@ -187,11 +188,11 @@ def delete_reserva(id_reserva: int, service: ReservaService = Depends(get_reserv
     except Exception as e:
         # Log del error para debugging
         import traceback
-        print(f"Error al eliminar reserva {id_reserva}:")
+        print(f"Error al cancelar reserva {id_reserva}:")
         print(traceback.format_exc())
         
         # Otros errores
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al eliminar la reserva: {str(e)}"
+            detail=f"Error al cancelar la reserva: {str(e)}"
         )

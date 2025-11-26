@@ -65,56 +65,48 @@ class ReservaService:
     def delete(self, id_reserva: int) -> None:
         self.repository.delete(id_reserva)
 
-    def eliminar_reserva_completa(self, id_reserva: int) -> None:
+    def cancelar_reserva_pendiente(self, id_reserva: int) -> None:
         """
-        Elimina una reserva completa solo si está en estado 'Pendiente'.
-        Elimina en cascada:
-        - Pagos asociados
-        - Turnos asociados
-        - Detalles de reserva
-        - La reserva misma
+        Cancela una reserva solo si está en estado 'Pendiente'.
+        - Cambia el estado de la reserva a 'Cancelada'
+        - Libera los turnos asociados (cambia estado a 'Disponible')
+        - NO elimina la reserva ni sus registros (mantiene historial)
         
         Raises:
             ValueError: Si la reserva no está en estado Pendiente
         """
+        from classes.estado_reserva.reserva_cancelada import ReservaCancelada
+        from classes.estado_turno.turno_disponible import TurnoDisponible
+        
         # Verificar que la reserva existe
         reserva = self.repository.get_by_id(id_reserva)
         if not reserva:
             raise ValueError(f"Reserva con ID {id_reserva} no encontrada")
         
-        # VALIDACIÓN: Solo permitir eliminar si está en estado Pendiente
+        # VALIDACIÓN: Solo permitir cancelar si está en estado Pendiente
         estado_actual = reserva.estado_nombre.lower()
         if estado_actual != "pendiente":
-            raise ValueError(f"No se puede eliminar una reserva en estado '{reserva.estado_nombre}'. Solo se pueden eliminar reservas en estado 'Pendiente'.")
+            raise ValueError(f"No se puede cancelar una reserva en estado '{reserva.estado_nombre}'. Solo se pueden cancelar reservas en estado 'Pendiente'.")
         
         try:
             # Deshabilitar autocommit para transacción
             self.repository.autocommit = False
             self.detalle_repository.autocommit = False
             self.turno_repository.autocommit = False
-            self.pago_repository.autocommit = False
             
-            # ORDEN IMPORTANTE: Respetar las claves foráneas
+            # 1. Cambiar estado de la reserva a Cancelada
+            reserva.cambiar_estado(ReservaCancelada())
+            self.repository.update(reserva)
             
-            # 1. Eliminar pagos asociados (FK a Reserva)
-            pagos = self.pago_repository.get_by_reserva(id_reserva)
-            for pago in pagos:
-                self.pago_repository.delete(pago.id_pago)
-            
-            # 2. Obtener detalles y sus turnos asociados
+            # 2. Obtener detalles y liberar los turnos asociados
             detalles = self.detalle_repository.get_by_reserva(id_reserva)
-            turnos_ids = [detalle.id_turno for detalle in detalles]
             
-            # 3. Eliminar detalles de reserva primero (FK a Reserva y Turno)
             for detalle in detalles:
-                self.detalle_repository.delete(detalle.id_detalle)
-            
-            # 4. Ahora eliminar turnos (ya no hay FK desde ReservaDetalle)
-            for turno_id in turnos_ids:
-                self.turno_repository.delete(turno_id)
-            
-            # 5. Finalmente eliminar la reserva
-            self.repository.delete(id_reserva)
+                turno = self.turno_repository.get_by_id(detalle.id_turno)
+                if turno:
+                    # Cambiar estado del turno a Disponible
+                    turno.cambiar_estado(TurnoDisponible())
+                    self.turno_repository.update(turno)
             
             # Confirmar transacción
             self.connection.commit()
@@ -128,7 +120,6 @@ class ReservaService:
             self.repository.autocommit = True
             self.detalle_repository.autocommit = True
             self.turno_repository.autocommit = True
-            self.pago_repository.autocommit = True
 
     def list_all(self) -> List[Reserva]:
         return self.repository.get_all()

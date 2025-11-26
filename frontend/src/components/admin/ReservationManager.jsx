@@ -148,15 +148,16 @@ const ReservationManager = ({ onClose }) => {
             });
 
             if (response.ok || response.status === 204) {
-                setMensaje('Reserva eliminada exitosamente');
-                // Limpiar la reserva mostrada después de 2 segundos
-                setTimeout(() => {
-                    setReserva(null);
-                    setMensaje('');
-                }, 2000);
+                setMensaje('Reserva cancelada exitosamente. Los turnos han sido liberados.');
+                // Recargar la reserva para mostrar el estado actualizado
+                const updatedResponse = await fetch(`http://localhost:8000/reservas/${reserva.id_reserva}/detalles`);
+                if (updatedResponse.ok) {
+                    const updatedData = await updatedResponse.json();
+                    setReserva(updatedData);
+                }
             } else {
                 const errorData = await response.json();
-                setError(errorData.detail || 'Error al eliminar la reserva');
+                setError(errorData.detail || 'Error al cancelar la reserva');
             }
         } catch (err) {
             setError('Error de conexión con el servidor');
@@ -371,7 +372,7 @@ const ReservationManager = ({ onClose }) => {
                                 <h3>Reserva #{reserva.id_reserva}</h3>
                                 {reserva.estado_reserva.toLowerCase() === 'pendiente' && (
                                     <button onClick={handleEliminar} className="delete-button" disabled={loading}>
-                                        🗑️ Eliminar Reserva
+                                        ❌ Cancelar Reserva
                                     </button>
                                 )}
                             </div>
@@ -442,28 +443,27 @@ const ReservationManager = ({ onClose }) => {
                         </div>
                     )}
 
-                    {/* Modal de confirmación de eliminación */}
+                    {/* Modal de confirmación de cancelación */}
                     {showConfirmDelete && (
                         <div className="confirm-modal-overlay">
                             <div className="confirm-modal">
-                                <h3>⚠️ Confirmar Eliminación</h3>
-                                <p>¿Estás seguro de que deseas eliminar esta reserva?</p>
+                                <h3>⚠️ Confirmar Cancelación</h3>
+                                <p>¿Estás seguro de que deseas cancelar esta reserva?</p>
                                 <p className="confirm-details">
-                                    Se eliminarán permanentemente:
+                                    Al cancelar esta reserva:
                                 </p>
                                 <ul className="confirm-list">
-                                    <li>La reserva #{reserva.id_reserva}</li>
-                                    <li>Todos los detalles de la reserva</li>
-                                    <li>Los turnos asociados ({reserva.detalles?.length || 0} turnos)</li>
-                                    <li>Los pagos asociados</li>
+                                    <li>La reserva #{reserva.id_reserva} cambiará a estado "Cancelada"</li>
+                                    <li>Los turnos asociados ({reserva.detalles?.length || 0} turnos) quedarán disponibles nuevamente</li>
+                                    <li>Se conservará el historial de la reserva</li>
                                 </ul>
-                                <p className="confirm-warning">Esta acción no se puede deshacer.</p>
+                                <p className="confirm-warning">Solo se pueden cancelar reservas en estado "Pendiente".</p>
                                 <div className="confirm-actions">
                                     <button onClick={handleConfirmarEliminar} className="confirm-delete-button" disabled={loading}>
-                                        {loading ? 'Eliminando...' : 'Sí, Eliminar'}
+                                        {loading ? 'Cancelando...' : 'Sí, Cancelar Reserva'}
                                     </button>
                                     <button onClick={handleCancelarEliminar} className="confirm-cancel-button" disabled={loading}>
-                                        Cancelar
+                                        No, Volver
                                     </button>
                                 </div>
                             </div>
