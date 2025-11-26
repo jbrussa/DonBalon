@@ -34,6 +34,9 @@ class ClienteService:
 
     def insert(self, obj: Cliente) -> Cliente:
         self.validate(obj)
+        # Validar que el email no exista
+        if self.repository.email_exists(obj.mail):
+            raise ValueError(f"El correo electrónico '{obj.mail}' ya está registrado.")
         return self.repository.create(obj)
 
     def get_by_id(self, id_cliente: int) -> Optional[Cliente]:
@@ -41,6 +44,9 @@ class ClienteService:
 
     def update(self, obj: Cliente) -> None:
         self.validate(obj)
+        # Validar que el email no exista para otro cliente
+        if self.repository.email_exists(obj.mail, exclude_id=obj.id_cliente):
+            raise ValueError(f"El correo electrónico '{obj.mail}' ya está registrado por otro usuario.")
         self.repository.update(obj)
 
     def delete(self, id_cliente: int) -> None:

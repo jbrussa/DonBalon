@@ -112,3 +112,20 @@ class ClienteRepository(BaseRepository):
         if not row:
             return None
         return cliente_from_dict(dict(row))
+
+    def email_exists(self, mail: str, exclude_id: Optional[int] = None) -> bool:
+        """
+        Verifica si un correo electrónico ya existe en la base de datos
+
+        Args:
+            mail: Correo electrónico a verificar
+            exclude_id: ID de cliente a excluir de la búsqueda (útil para updates)
+
+        Returns:
+            True si el email ya existe, False en caso contrario
+        """
+        if exclude_id is not None:
+            row = self.query_one(f"SELECT 1 FROM {self.TABLE} WHERE mail = ? AND id_cliente != ?", (mail, exclude_id))
+        else:
+            row = self.query_one(f"SELECT 1 FROM {self.TABLE} WHERE mail = ?", (mail,))
+        return row is not None
