@@ -1,13 +1,6 @@
 -- Base de datos SQLite para DonBalon - Sistema de Gestión de Reservas de Canchas Deportivas
 -- Diagrama de Entidad-Relación (DER) de Canchas Deportivas
 
--- Tabla: Estado
-CREATE TABLE IF NOT EXISTS Estado (
-    id_estado INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre VARCHAR(50) NOT NULL,
-    ambito VARCHAR(50) NOT NULL
-);
-
 -- Tabla: TipoCancha
 CREATE TABLE IF NOT EXISTS TipoCancha (
     id_tipo INTEGER PRIMARY KEY AUTOINCREMENT,

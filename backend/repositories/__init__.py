@@ -1,6 +1,5 @@
 # Repositories para acceso a datos (DAO pattern)
 from .base_repository import BaseRepository
-from .estado_repository import EstadoRepository
 from .tipo_cancha_repository import TipoCanchaRepository
 from .cancha_repository import CanchaRepository
 from .servicio_repository import ServicioRepository
@@ -17,7 +16,6 @@ from .equipo_repository import EquipoRepository
 
 __all__ = [
     "BaseRepository",
-    "EstadoRepository",
     "TipoCanchaRepository",
     "CanchaRepository",
     "ServicioRepository",
@@ -29,7 +27,6 @@ __all__ = [
     "PagoRepository",
     "ReservaRepository",
     "ReservaDetalleRepository",
-    "TipoPagoRepository",
     "TorneoRepository",
     "EquipoRepository",
 ]

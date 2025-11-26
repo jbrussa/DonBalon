@@ -23,8 +23,6 @@ from classes.estado_reserva.reserva_pendiente import ReservaPendiente
 from classes.estado_turno.turno_no_disponible import TurnoNoDisponible
 from repositories.metodo_pago_repository import MetodoPagoRepository
 
-ID_ESTADO_NO_DISPONIBLE = 2
-
 
 class ReservaService:
     def __init__(self, db_path: Optional[str] = None, connection: Optional[sqlite3.Connection] = None):

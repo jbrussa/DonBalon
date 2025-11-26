@@ -5,7 +5,6 @@ from controllers import (
     reserva_controller,
     cliente_controller,
     tipo_cancha_controller,
-    estado_controller,
     horario_controller,
     servicio_controller,
     turno_controller,
@@ -40,7 +39,6 @@ app.include_router(cancha_controller.router)
 app.include_router(reserva_controller.router)
 app.include_router(cliente_controller.router)
 app.include_router(tipo_cancha_controller.router)
-app.include_router(estado_controller.router)
 app.include_router(horario_controller.router)
 app.include_router(servicio_controller.router)
 app.include_router(turno_controller.router)

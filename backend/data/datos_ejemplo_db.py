@@ -11,15 +11,7 @@ def insert_sample_data(db_path):
     conn.execute("PRAGMA foreign_keys = ON")
     cursor = conn.cursor()
     
-    try:
-        # Estado
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('Disponible', 'turno')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('No disponible', 'turno')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('PENDIENTE', 'reserva')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('PAGADA', 'reserva')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('FINALIZADA', 'reserva')")
-        cursor.execute("INSERT INTO Estado (nombre, ambito) VALUES ('CANCELADA', 'reserva')")
-        
+    try:        
         # TipoCancha
         cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 11 césped', 110000)")
         cursor.execute("INSERT INTO TipoCancha (descripcion, precio_hora) VALUES ('Fútbol 9 césped', 90000)")
