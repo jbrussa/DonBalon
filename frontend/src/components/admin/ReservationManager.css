@@ -368,6 +368,33 @@
     font-weight: 700;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.payment-button {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.payment-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.payment-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .edit-button {
     padding: 10px 24px;
     background: linear-gradient(135deg, #C19A6B, #A67C52);
@@ -607,6 +634,45 @@
 .confirm-cancel-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.confirm-payment-button {
+    flex: 1;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.confirm-payment-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+}
+
+.confirm-payment-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Estilos específicos para modal de pago */
+.confirm-modal-payment h3 {
+    color: #059669;
+}
+
+.confirm-list-payment li {
+    background-color: #d1fae5;
+    border-left-color: #10b981;
+    color: #065f46;
+}
+
+.confirm-warning-payment {
+    color: #059669;
+    background-color: #d1fae5;
 }
 
 /* Detalles de turnos */

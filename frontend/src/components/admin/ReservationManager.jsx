@@ -24,6 +24,7 @@ const ReservationManager = ({ onClose }) => {
     const [error, setError] = useState('');
     const [mensaje, setMensaje] = useState('');
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [showConfirmPago, setShowConfirmPago] = useState(false);
 
     const handleBuscar = async () => {
         if (!idReserva.trim()) {
@@ -158,6 +159,51 @@ const ReservationManager = ({ onClose }) => {
             } else {
                 const errorData = await response.json();
                 setError(errorData.detail || 'Error al cancelar la reserva');
+            }
+        } catch (err) {
+            setError('Error de conexión con el servidor');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMarcarPagada = () => {
+        setShowConfirmPago(true);
+    };
+
+    const handleCancelarPago = () => {
+        setShowConfirmPago(false);
+    };
+
+    const handleConfirmarPago = async () => {
+        setLoading(true);
+        setMensaje('');
+        setError('');
+        setShowConfirmPago(false);
+
+        try {
+            const response = await fetch(`http://localhost:8000/reservas/${reserva.id_reserva}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    estado_reserva: 'Pagada'
+                }),
+            });
+
+            if (response.ok) {
+                setMensaje('Reserva marcada como pagada exitosamente.');
+                // Recargar la reserva para mostrar el estado actualizado
+                const updatedResponse = await fetch(`http://localhost:8000/reservas/${reserva.id_reserva}/detalles`);
+                if (updatedResponse.ok) {
+                    const updatedData = await updatedResponse.json();
+                    setReserva(updatedData);
+                }
+            } else {
+                const errorData = await response.json();
+                setError(errorData.detail || 'Error al marcar la reserva como pagada');
             }
         } catch (err) {
             setError('Error de conexión con el servidor');
@@ -371,9 +417,14 @@ const ReservationManager = ({ onClose }) => {
                             <div className="info-header">
                                 <h3>Reserva #{reserva.id_reserva}</h3>
                                 {reserva.estado_reserva.toLowerCase() === 'pendiente' && (
-                                    <button onClick={handleEliminar} className="delete-button" disabled={loading}>
-                                        ❌ Cancelar Reserva
-                                    </button>
+                                    <div className="action-buttons">
+                                        <button onClick={handleMarcarPagada} className="payment-button" disabled={loading}>
+                                            ✅ Marcar como Pagada
+                                        </button>
+                                        <button onClick={handleEliminar} className="delete-button" disabled={loading}>
+                                            ❌ Cancelar Reserva
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
@@ -463,6 +514,33 @@ const ReservationManager = ({ onClose }) => {
                                         {loading ? 'Cancelando...' : 'Sí, Cancelar Reserva'}
                                     </button>
                                     <button onClick={handleCancelarEliminar} className="confirm-cancel-button" disabled={loading}>
+                                        No, Volver
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal de confirmación de pago */}
+                    {showConfirmPago && (
+                        <div className="confirm-modal-overlay">
+                            <div className="confirm-modal confirm-modal-payment">
+                                <h3>💰 Confirmar Pago</h3>
+                                <p>¿Estás seguro de que deseas marcar esta reserva como pagada?</p>
+                                <p className="confirm-details">
+                                    Al confirmar el pago:
+                                </p>
+                                <ul className="confirm-list confirm-list-payment">
+                                    <li>La reserva #{reserva.id_reserva} cambiará a estado "Pagada"</li>
+                                    <li>Los turnos asociados ({reserva.detalles?.length || 0} turnos) quedarán confirmados</li>
+                                    <li>El monto total es: ${reserva.monto_total}</li>
+                                </ul>
+                                <p className="confirm-warning confirm-warning-payment">Esta acción confirma que se recibió el pago del cliente.</p>
+                                <div className="confirm-actions">
+                                    <button onClick={handleConfirmarPago} className="confirm-payment-button" disabled={loading}>
+                                        {loading ? 'Procesando...' : 'Sí, Confirmar Pago'}
+                                    </button>
+                                    <button onClick={handleCancelarPago} className="confirm-cancel-button" disabled={loading}>
                                         No, Volver
                                     </button>
                                 </div>
