@@ -94,5 +94,11 @@ def delete_horario(id_horario: int, service: HorarioService = Depends(get_horari
             detail=f"Horario con ID {id_horario} no encontrado"
         )
     
-    service.delete(id_horario)
-    return None
+    try:
+        service.delete(id_horario)
+        return None
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

@@ -96,5 +96,11 @@ def delete_cancha(id_cancha: int, service: CanchaService = Depends(get_cancha_se
             detail=f"Cancha con ID {id_cancha} no encontrada"
         )
     
-    service.delete(id_cancha)
-    return None
+    try:
+        service.delete(id_cancha)
+        return None
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

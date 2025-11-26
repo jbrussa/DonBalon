@@ -1,14 +1,17 @@
 import sqlite3
 from typing import List, Optional
+from datetime import date
 from classes.cancha import Cancha
 from repositories.cancha_repository import CanchaRepository
 from repositories.tipo_cancha_repository import TipoCanchaRepository
+from repositories.turno_repository import TurnoRepository
 
 
 class CanchaService:
     def __init__(self, db_path: Optional[str] = None, connection: Optional[sqlite3.Connection] = None):
         self.repository = CanchaRepository(db_path, connection)
         self.tipo_cancha_repository = TipoCanchaRepository(db_path, connection)
+        self.turno_repository = TurnoRepository(db_path, connection)
 
     def validate(self, obj: Cancha) -> None:
         if not obj.nombre:
@@ -42,6 +45,22 @@ class CanchaService:
         self.repository.update(obj)
 
     def delete(self, id_cancha: int) -> None:
+        # Validar que no haya turnos futuros no disponibles (con reservas)
+        turnos_cancha = self.turno_repository.get_by_cancha(id_cancha)
+        fecha_actual = date.today()
+        
+        turnos_futuros_no_disponibles = [
+            turno for turno in turnos_cancha
+            if turno.fecha and turno.fecha >= fecha_actual 
+            and turno.estado_nombre.lower() in ['no disponible', 'nodisponible']
+        ]
+        
+        if turnos_futuros_no_disponibles:
+            raise ValueError(
+                f"No se puede desactivar la cancha porque tiene {len(turnos_futuros_no_disponibles)} "
+                f"turno(s) reservado(s) para fechas futuras. Debe cancelar las reservas primero."
+            )
+        
         self.repository.delete(id_cancha)
 
     def list_all(self) -> List[Cancha]:
