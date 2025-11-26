@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import Login from "../auth/Login";
+import Register from "../auth/Register";
 import Payment from "../payment/Payment";
 import "./Schedule.css";
 
@@ -21,6 +22,7 @@ export default function Schedule() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [selectedTurnos, setSelectedTurnos] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const { isAuthenticated } = useAuth();
@@ -222,7 +224,29 @@ export default function Schedule() {
     setShowLoginModal(false);
     setLoginMessage("");
 
-    // Si después de cerrar el login el usuario se autenticó, abrir modal de pago
+    // Si después de cerrar el login el usuario se autenticaró, abrir modal de pago
+    if (isAuthenticated() && selectedTurnos.length > 0) {
+      setShowPaymentModal(true);
+    }
+  };
+
+  // Cambiar de Login a Register
+  const handleSwitchToRegister = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+
+  // Cambiar de Register a Login
+  const handleSwitchToLogin = () => {
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
+  };
+
+  // Callback cuando se cierra el modal de registro
+  const handleCloseRegister = () => {
+    setShowRegisterModal(false);
+
+    // Si después de registrarse el usuario se autenticaró, abrir modal de pago
     if (isAuthenticated() && selectedTurnos.length > 0) {
       setShowPaymentModal(true);
     }
@@ -412,7 +436,21 @@ export default function Schedule() {
       )}
 
       {/* Modal de login si no está autenticado */}
-      {showLoginModal && <Login onClose={handleCloseLogin} message={loginMessage} />}
+      {showLoginModal && (
+        <Login
+          onClose={handleCloseLogin}
+          message={loginMessage}
+          onSwitchToRegister={handleSwitchToRegister}
+        />
+      )}
+
+      {/* Modal de registro */}
+      {showRegisterModal && (
+        <Register
+          onClose={handleCloseRegister}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
+      )}
 
       {/* Modal de pago */}
       {showPaymentModal && (
